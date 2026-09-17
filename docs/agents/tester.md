@@ -31,6 +31,14 @@ cmake -S . -B build/sanitize -DCMAKE_C_FLAGS="-fsanitize=undefined,address -fno-
 - 새 KAT 벡터(`.rsp`)가 추가됐다면 **변조 검사**를 합니다: 벡터 한 비트를 바꾼 복사본을 저장소 밖 임시 디렉터리에 만들고 KAT 테스트가 실제로 실패하는지 확인한 뒤 복사본을 지웁니다. 실패하지 않으면 테스트가 벡터를 읽지 않는 것이므로 보고합니다.
 - 포팅 작업이라면 coder 보고에 원본 대조(무작위 10만 건) 결과가 있는지 확인합니다. 없으면 finding으로 보고합니다.
 - 테스트 프레임워크를 새로 도입하지 않습니다.
+- 이 단계에서 `tests/` 파일을 추가하거나 수정했다면, 포맷팅이 끝난 뒤 아래 명령을 다시 모두 실행합니다. 새 테스트가 컴파일·실행되지 않은 상태로 통과 처리하면 안 됩니다.
+
+```sh
+cmake -S . -B build && cmake --build build
+ctest --test-dir build --output-on-failure
+cmake -S . -B build/sanitize -DCMAKE_C_FLAGS="-fsanitize=undefined,address -fno-sanitize-recover=all" \
+  && cmake --build build/sanitize && ctest --test-dir build/sanitize --output-on-failure
+```
 
 ## 마무리 보고
 - 빌드 성공/실패, 경고 내역 (파일:라인)

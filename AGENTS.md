@@ -31,16 +31,16 @@ git diff HEAD                   # 추적 중인 파일의 변경 내용
 
 ## 에이전트 파이프라인
 
-역할 지시문은 `docs/agents/<role>.md`에 도구 중립적으로 둔다. `.claude/agents/`는 그 문서를 가리키는 Claude Code용 래퍼(도구 제한, 모델 지정)다. 다른 도구용 래퍼를 만드는 방법은 `docs/agents/README.md`를 본다.
+역할 지시문은 `docs/agents/<role>.md`에 도구 중립적으로 둔다. `.claude/agents/`는 그 문서를 가리키는 Claude Code용 래퍼(도구 제한, 모델 지정)다. 다른 도구용 래퍼를 만드는 방법은 `docs/agents/README.md`를 본다. Hermes의 `.hermes/agents/` 래퍼는 자동 검색·권한 강제·모델 선택에 쓰이지 않는 안내 문서다. Hermes 오케스트레이터는 `.hermes.md`, 이 파일, `README.md`, 역할 지시문을 직접 읽고 역할별 제약을 위임 목표에 명시한다.
 
-아래 순서로 에이전트를 호출한다. 각 에이전트에는 사용자 요청 원문과 직전 단계의 보고를 그대로 넘긴다. 서브에이전트 기능이 없는 도구에서는 같은 순서로 각 단계의 역할 문서를 읽고 그 역할로 단계를 수행한 뒤, 역할 문서의 "마무리 보고" 형식으로 결과를 남기고 다음 단계로 넘어간다. 이때도 reviewer 단계에서는 파일을 고치지 않는다.
+아래 순서로 에이전트를 호출한다. 각 에이전트에는 사용자 요청 원문과 직전 단계의 보고를 그대로 넘긴다. 서브에이전트 기능이 없는 도구에서는 같은 순서로 각 단계의 역할 문서를 읽고 그 역할로 단계를 수행한 뒤, 역할 문서의 "마무리 보고" 형식으로 결과를 남기고 다음 단계로 넘어간다. 이때도 reviewer 단계에서는 파일을 고치지 않는다. 역할 권한을 런타임이 강제하지 않는 도구에서는 reviewer·documenter 같은 제한 역할의 전후에 `git status --porcelain`, `git diff HEAD`, 신규 파일의 전체 내용을 비교한다. 허용 범위 밖의 변경이 있으면 그 단계는 실패로 처리하고 다음 단계로 넘기지 않는다.
 
 1. **coder** — 요청된 변경 구현
 2. **formatter** — 바뀐 파일에 clang-format 적용
 3. **reviewer** — 검토. findings가 있으면 **coder(최소 수정) → formatter → reviewer** 반복. 최대 3회 검토 후에도 findings가 남으면 멈추고 사용자에게 보고한다.
-4. **tester** — 빌드, 전체 CTest, sanitizer, 필요한 테스트 추가. 실패가 있으면 **fixer → tester** 반복. 최대 2회 후에도 실패하면 멈추고 사용자에게 보고한다.
-5. fixer나 tester가 `src/` 또는 `include/`를 바꿨다면 **formatter → reviewer**를 한 번 더 거친다. `tests/`만 바뀌었다면 **formatter**만 거친다.
-6. **documenter** — README 갱신
+4. **tester** — 빌드, 전체 CTest, sanitizer, 필요한 테스트 추가. `tests/`를 추가/수정했다면 포맷 후 빌드, 전체 CTest, sanitizer를 모두 다시 실행한다. 실패가 있으면 **fixer → tester** 반복. 최대 2회 후에도 실패하면 멈추고 사용자에게 보고한다.
+5. fixer나 tester가 `src/` 또는 `include/`를 바꿨다면 **formatter → reviewer**를 한 번 더 거친다. 이 reviewer가 finding을 보고하면 **coder(최소 수정) → formatter → reviewer → tester**로 되돌아간다. 이 사후 검토는 앞선 reviewer 검토 횟수에 포함하며, 총 3회 후에도 finding이 남으면 멈추고 사용자에게 보고한다. `tests/`만 바뀌었다면 **formatter → tester**를 거친다.
+6. **documenter** — `README.md`만 갱신한다. 헤더 주석은 이 단계에서 수정하지 않는다.
 
 reviewer의 보고는 최종 텍스트로 온다. "findings: 없음"이 다음 단계로 넘어가는 신호다.
 
