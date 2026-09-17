@@ -33,3 +33,7 @@ function(add_cipher name)
 endfunction()
 
 add_cipher(template-cipher)
+add_cipher(aes)
+add_cipher(aes-lut1)
+add_cipher(aes-lut2)
+add_cipher(aes-lut3)
