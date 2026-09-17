@@ -42,6 +42,8 @@ add_cipher(lea-unrolled)
 add_cipher(cham)
 add_cipher(hight)
 add_cipher(hight-lut)
+add_cipher(aria)
+add_cipher(aria-lut)
 
 add_executable(aes-kat-test tests/aes-kat-test.c)
 target_include_directories(aes-kat-test PRIVATE ${PROJECT_SOURCE_DIR}/include)
@@ -60,3 +62,7 @@ add_test(NAME cham-kat-test COMMAND cham-kat-test ${PROJECT_SOURCE_DIR}/tests/ve
 add_executable(hight-kat-test tests/hight-kat-test.c)
 target_link_libraries(hight-kat-test PRIVATE hight hight-lut)
 add_test(NAME hight-kat-test COMMAND hight-kat-test ${PROJECT_SOURCE_DIR}/tests/vectors/hight)
+
+add_executable(aria-kat-test tests/aria-kat-test.c)
+target_link_libraries(aria-kat-test PRIVATE aria aria-lut)
+add_test(NAME aria-kat-test COMMAND aria-kat-test ${PROJECT_SOURCE_DIR}/tests/vectors/aria)
