@@ -119,6 +119,8 @@ ctest --test-dir build --output-on-failure
 - `<name>-test`: 알고리즘 변형마다 하나씩 있으며, 표준 문서의 테스트 벡터로 암호화, 복호화, in-place 동작을 확인합니다.
 - `<algo>-kat-test`: `tests/vectors/<algo>/`의 `.rsp` 파일을 읽어 해당 알고리즘의 모든 변형을 검증합니다. 블록 암호 파일은 NIST CAVS 형식(`ECBVarKey*`, `ECBVarTxt*`)을 따르며 `[ENCRYPT]`와 `[DECRYPT]` 섹션이 있습니다. 해시 파일(`*ShortMsg.rsp`)은 NIST SHA 벡터 형식(`Len`, `Msg`, `MD`)이며, 0~512바이트의 모든 길이를 담고 있어 블록 경계 처리를 확인합니다. 해시 KAT는 메시지를 한 번에 넣는 경우와 잘게 나눠 넣는 경우를 모두 검사합니다.
 
+GitHub Actions(`.github/workflows/ci.yml`)가 `main`으로의 push와 모든 PR에서 같은 검사를 돌립니다. gcc와 clang 각각 일반 빌드와 UBSan+ASan 빌드를 `-Werror`로 컴파일해 CTest를 실행하고, clang-format 검사를 별도 job으로 돌립니다.
+
 테스트 실행 파일을 직접 실행할 수도 있습니다. KAT 테스트는 벡터 디렉터리를 인자로 받습니다.
 
 ```sh
