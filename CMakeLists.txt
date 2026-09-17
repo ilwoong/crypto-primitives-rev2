@@ -37,3 +37,8 @@ add_cipher(aes)
 add_cipher(aes-lut1)
 add_cipher(aes-lut2)
 add_cipher(aes-lut3)
+
+add_executable(aes-kat-test tests/aes-kat-test.c)
+target_include_directories(aes-kat-test PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(aes-kat-test PRIVATE aes aes-lut1 aes-lut2 aes-lut3)
+add_test(NAME aes-kat-test COMMAND aes-kat-test ${PROJECT_SOURCE_DIR}/tests/vectors/aes)
