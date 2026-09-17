@@ -79,3 +79,7 @@ add_test(NAME aria-kat-test COMMAND aria-kat-test ${PROJECT_SOURCE_DIR}/tests/ve
 add_executable(seed-kat-test tests/seed-kat-test.c)
 target_link_libraries(seed-kat-test PRIVATE seed)
 add_test(NAME seed-kat-test COMMAND seed-kat-test ${PROJECT_SOURCE_DIR}/tests/vectors/seed)
+
+add_executable(lsh-kat-test tests/lsh-kat-test.c)
+target_link_libraries(lsh-kat-test PRIVATE lsh256 lsh512)
+add_test(NAME lsh-kat-test COMMAND lsh-kat-test ${PROJECT_SOURCE_DIR}/tests/vectors/lsh)
