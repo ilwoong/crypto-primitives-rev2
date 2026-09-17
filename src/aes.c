@@ -264,6 +264,7 @@ const block_cipher aes128_block_cipher = {
     .expand_key = aes128_expand_key,
     .encrypt = aes_encrypt,
     .decrypt = aes_decrypt,
+    .clear = aes_clear,
 };
 
 const block_cipher aes192_block_cipher = {
@@ -272,6 +273,7 @@ const block_cipher aes192_block_cipher = {
     .expand_key = aes192_expand_key,
     .encrypt = aes_encrypt,
     .decrypt = aes_decrypt,
+    .clear = aes_clear,
 };
 
 const block_cipher aes256_block_cipher = {
@@ -280,6 +282,7 @@ const block_cipher aes256_block_cipher = {
     .expand_key = aes256_expand_key,
     .encrypt = aes_encrypt,
     .decrypt = aes_decrypt,
+    .clear = aes_clear,
 };
 
 void aes128_expand_key(void *ctx, const uint8_t *master_key)
@@ -390,4 +393,9 @@ void aes_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     decrypt_last_round(block, rks);
 
     memcpy(out, block, 16);
+}
+
+void aes_clear(void *ctx)
+{
+    secure_zero(ctx, sizeof(aes_ctx));
 }

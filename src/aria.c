@@ -256,12 +256,18 @@ void aria_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     crypt_block(c->dec_round_keys, c->rounds, out, in);
 }
 
+void aria_clear(void *ctx)
+{
+    secure_zero(ctx, sizeof(aria_ctx));
+}
+
 const block_cipher aria128_block_cipher = {
     .block_size = BLOCK_SIZE,
     .key_size = 16,
     .expand_key = aria128_expand_key,
     .encrypt = aria_encrypt,
     .decrypt = aria_decrypt,
+    .clear = aria_clear,
 };
 const block_cipher aria192_block_cipher = {
     .block_size = BLOCK_SIZE,
@@ -269,6 +275,7 @@ const block_cipher aria192_block_cipher = {
     .expand_key = aria192_expand_key,
     .encrypt = aria_encrypt,
     .decrypt = aria_decrypt,
+    .clear = aria_clear,
 };
 const block_cipher aria256_block_cipher = {
     .block_size = BLOCK_SIZE,
@@ -276,4 +283,5 @@ const block_cipher aria256_block_cipher = {
     .expand_key = aria256_expand_key,
     .encrypt = aria_encrypt,
     .decrypt = aria_decrypt,
+    .clear = aria_clear,
 };

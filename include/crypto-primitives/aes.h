@@ -20,5 +20,6 @@ void aes192_expand_key(void *ctx, const uint8_t *master_key);
 void aes256_expand_key(void *ctx, const uint8_t *master_key);
 void aes_encrypt(void *ctx, uint8_t *out, const uint8_t *in);
 void aes_decrypt(void *ctx, uint8_t *out, const uint8_t *in);
+void aes_clear(void *ctx);
 
 #endif

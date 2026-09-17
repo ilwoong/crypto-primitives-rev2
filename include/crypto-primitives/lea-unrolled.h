@@ -20,5 +20,6 @@ void lea192_unrolled_expand_key(void *ctx, const uint8_t *master_key);
 void lea256_unrolled_expand_key(void *ctx, const uint8_t *master_key);
 void lea_unrolled_encrypt(void *ctx, uint8_t *out, const uint8_t *in);
 void lea_unrolled_decrypt(void *ctx, uint8_t *out, const uint8_t *in);
+void lea_unrolled_clear(void *ctx);
 
 #endif

@@ -227,10 +227,16 @@ void seed_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     seed_crypt((const seed_ctx *)ctx, out, in, 1);
 }
 
+void seed_clear(void *ctx)
+{
+    secure_zero(ctx, sizeof(seed_ctx));
+}
+
 const block_cipher seed_block_cipher = {
     .block_size = 16,
     .key_size = 16,
     .expand_key = seed_expand_key,
     .encrypt = seed_encrypt,
     .decrypt = seed_decrypt,
+    .clear = seed_clear,
 };

@@ -149,12 +149,18 @@ void lea_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     memcpy(out, b, 16);
 }
 
+void lea_clear(void *ctx)
+{
+    secure_zero(ctx, sizeof(lea_ctx));
+}
+
 const block_cipher lea128_block_cipher = {
     .block_size = 16,
     .key_size = 16,
     .expand_key = lea128_expand_key,
     .encrypt = lea_encrypt,
     .decrypt = lea_decrypt,
+    .clear = lea_clear,
 };
 const block_cipher lea192_block_cipher = {
     .block_size = 16,
@@ -162,6 +168,7 @@ const block_cipher lea192_block_cipher = {
     .expand_key = lea192_expand_key,
     .encrypt = lea_encrypt,
     .decrypt = lea_decrypt,
+    .clear = lea_clear,
 };
 const block_cipher lea256_block_cipher = {
     .block_size = 16,
@@ -169,4 +176,5 @@ const block_cipher lea256_block_cipher = {
     .expand_key = lea256_expand_key,
     .encrypt = lea_encrypt,
     .decrypt = lea_decrypt,
+    .clear = lea_clear,
 };

@@ -103,6 +103,12 @@ static int run_block_cipher_vector(const kat_block_cipher_entry *entries, size_t
             continue;
         ++nmatched;
 
+        if (!entry->cipher->clear) {
+            printf("[FAIL] %s: clear is NULL\n", entry->name);
+            failures++;
+            continue;
+        }
+
         entry->cipher->expand_key(entry->ctx, key);
         if (mode == mode_encrypt) {
             entry->cipher->encrypt(entry->ctx, result, plaintext);
@@ -118,6 +124,8 @@ static int run_block_cipher_vector(const kat_block_cipher_entry *entries, size_t
                 failures++;
             }
         }
+
+        entry->cipher->clear(entry->ctx);
     }
 
     if (nmatched == 0) {

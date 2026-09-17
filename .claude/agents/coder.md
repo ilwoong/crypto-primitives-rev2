@@ -24,6 +24,7 @@ model: opus
 - 인스턴스 이름: `<algo><keybits>_<variant>_block_cipher` (예: `aes128_lut1_block_cipher`). 키 길이가 하나면 `<algo>_block_cipher`. CHAM은 블록/키 둘 다 표기 (`cham64_128_block_cipher`).
 - `expand_key`는 키 길이를 받지 않으므로 키 길이마다 인스턴스를 따로 둡니다. 컨텍스트와 encrypt/decrypt는 공유.
 - `block_cipher` 인스턴스는 지정 초기화로 쓰고 `.block_size`, `.key_size`(바이트)를 반드시 채웁니다. 값이 틀리면 KAT 하네스가 벡터에 맞는 항목을 찾지 못해 실패합니다.
+- `void <algo>_clear(void *ctx)`를 구현해 `secure_zero(ctx, sizeof(<algo>_ctx))`로 컨텍스트 전체를 지우고 모든 인스턴스의 `.clear`에 연결합니다. 빠뜨리면 단위 테스트와 KAT가 `clear is NULL`로 실패합니다. 일반 `memset`은 최적화로 제거될 수 있으니 쓰지 않습니다.
 - 마스터 키 입력은 항상 `const uint8_t *`입니다. 라운드 키 타입은 구현에 맞게 고르면 되고 알고리즘 간 통일하지 않습니다. 단, `uint8_t` 버퍼를 넓은 타입 포인터로 캐스트해 쓰지 않습니다. 워드로 쓸 거면 워드 배열로 선언합니다.
 - 회전 함수 인자는 `unsigned rot`. 회전량이 워드 폭 이상이 될 수 있으면 마스킹. `x >> 32` 같은 미정의 시프트 금지.
 - for 루프는 `++i`.

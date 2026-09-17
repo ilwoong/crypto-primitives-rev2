@@ -58,6 +58,18 @@ static int check_block(const char *test_name, const char *what, const uint8_t *a
     return 1;
 }
 
+static int check_cleared(const char *test_name, const void *ctx, size_t size)
+{
+    const uint8_t *bytes = (const uint8_t *)ctx;
+    for (size_t i = 0; i < size; ++i) {
+        if (bytes[i] != 0) {
+            printf("[FAIL] %s: clear left nonzero bytes\n", test_name);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static int run_test_vector(const block_cipher *cipher, const test_vector *tv)
 {
     aes_lut1_ctx ctx;
@@ -66,6 +78,11 @@ static int run_test_vector(const block_cipher *cipher, const test_vector *tv)
 
     if (cipher->block_size > MAX_BLOCK_SIZE) {
         printf("[FAIL] %s: block_size %zu exceeds buffer %d\n", tv->name, cipher->block_size, MAX_BLOCK_SIZE);
+        return 1;
+    }
+
+    if (!cipher->clear) {
+        printf("[FAIL] %s: clear is NULL\n", tv->name);
         return 1;
     }
 
@@ -83,6 +100,9 @@ static int run_test_vector(const block_cipher *cipher, const test_vector *tv)
 
     cipher->decrypt(&ctx, buf, buf);
     failures += check_block(tv->name, "in-place decrypt", buf, tv->plaintext, cipher->block_size);
+
+    cipher->clear(&ctx);
+    failures += check_cleared(tv->name, &ctx, sizeof(ctx));
 
     if (failures == 0) {
         printf("[PASS] %s\n", tv->name);

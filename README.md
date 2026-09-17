@@ -1,6 +1,6 @@
 # crypto-primitives
 
-C11로 작성한 블록 암호와 해시 함수 구현 모음입니다. 블록 암호는 `include/crypto-primitives/cipher.h`의 `block_cipher` 인터페이스(`expand_key`, `encrypt`, `decrypt`)를, 해시 함수는 `include/crypto-primitives/message-digest.h`의 `message_digest` 인터페이스(`init`, `update`, `final`)를 구현합니다. `block_cipher`와 `message_digest`는 함수 포인터 외에 크기 정보도 담고 있습니다. 알고리즘마다 소스 파일 하나로 되어 있어 외부 의존성 없이 빌드됩니다.
+C11로 작성한 블록 암호와 해시 함수 구현 모음입니다. 블록 암호는 `include/crypto-primitives/cipher.h`의 `block_cipher` 인터페이스(`expand_key`, `encrypt`, `decrypt`, `clear`)를, 해시 함수는 `include/crypto-primitives/message-digest.h`의 `message_digest` 인터페이스(`init`, `update`, `final`)를 구현합니다. `block_cipher`와 `message_digest`는 함수 포인터 외에 크기 정보도 담고 있습니다. 알고리즘마다 소스 파일 하나로 되어 있어 외부 의존성 없이 빌드됩니다.
 
 `template-cipher`는 이 인터페이스를 보여주는 예제로, 키와 블록을 XOR만 하는 동작을 합니다. 실제 암호로 쓰면 안 됩니다.
 
@@ -32,7 +32,7 @@ C11로 작성한 블록 암호와 해시 함수 구현 모음입니다. 블록 �
 | LSH-256-256 | `lsh256` | `lsh256_ctx` | `lsh256_message_digest` | 32 / 128 바이트 |
 | LSH-512-512 | `lsh512` | `lsh512_ctx` | `lsh512_message_digest` | 64 / 256 바이트 |
 
-`block_cipher`는 함수 포인터 외에 `block_size`와 `key_size`를 담고 있어, 알고리즘을 모르는 코드도 버퍼 크기를 알 수 있습니다.
+`block_cipher`는 함수 포인터 외에 `block_size`와 `key_size`를 담고 있어, 알고리즘을 모르는 코드도 버퍼 크기를 알 수 있습니다. 키 사용이 끝나면 `clear(&ctx)`로 컨텍스트 전체(라운드 키 포함)를 0으로 지우며, `cipher.h`의 `secure_zero`를 써서 컴파일러 최적화로 제거되지 않습니다. `message_digest`는 `final`이 컨텍스트를 초기화하므로 별도 `clear` 함수가 없습니다.
 
 `message_digest`는 함수 포인터 외에 `digest_size`와 `block_size`를 담고 있어, 알고리즘을 모르는 코드(테스트, HMAC 등)도 버퍼 크기를 알 수 있습니다. `final`을 호출하면 컨텍스트가 초기화되므로 다시 쓰려면 `init`부터 시작합니다.
 
@@ -47,6 +47,7 @@ uint8_t out[16];
 aes128_block_cipher.expand_key(&ctx, key);       // key: aes128_block_cipher.key_size 바이트
 aes128_block_cipher.encrypt(&ctx, out, in);      // in, out: aes128_block_cipher.block_size 바이트
 aes128_block_cipher.decrypt(&ctx, out, out);     // in-place 호출 가능
+aes128_block_cipher.clear(&ctx);                // 키 사용이 끝나면 컨텍스트 소거
 ```
 
 컨텍스트는 호출자가 할당합니다. 블록 크기와 키 크기는 `block_cipher` 인스턴스의 `block_size`, `key_size` 필드에서 확인할 수 있습니다.
@@ -145,7 +146,7 @@ SEED는 원 저장소 구현의 키 스케줄이 RFC 4269와 달라(키가 전�
 `<name>`이 알고리즘 이름일 때:
 
 1. `include/crypto-primitives/<name>.h`에 컨텍스트 구조체와 함수, `extern const block_cipher` 선언을 추가합니다.
-2. `src/<name>.c`에 구현을 작성합니다. `block_cipher` 인스턴스는 지정 초기화로 작성하고, `block_size`와 `key_size` 필드를 바이트 단위로 채웁니다. 테이블 등 필요한 것은 모두 이 파일 안에 `static`으로 둡니다.
+2. `src/<name>.c`에 구현을 작성합니다. `block_cipher` 인스턴스는 지정 초기화로 작성하고, `block_size`, `key_size`, `clear` 필드를 채웁니다. `clear` 함수는 컨텍스트를 0으로 지우며 모든 키 길이 인스턴스가 같은 함수를 공유할 수 있습니다. `clear`를 빠뜨리면 단위 테스트와 KAT 테스트가 "clear is NULL"로 실패합니다. 테이블 등 필요한 것은 모두 이 파일 안에 `static`으로 둡니다.
 3. `tests/<name>-test.c`에 테스트 벡터 기반 테스트를 작성합니다.
 4. `CMakeLists.txt`에 한 줄을 추가합니다.
 

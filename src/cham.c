@@ -170,12 +170,18 @@ void cham128_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     memcpy(out, blk, sizeof(blk));
 }
 
+void cham_clear(void *ctx)
+{
+    secure_zero(ctx, sizeof(cham_ctx));
+}
+
 const block_cipher cham64_128_block_cipher = {
     .block_size = 8,
     .key_size = 16,
     .expand_key = cham64_128_expand_key,
     .encrypt = cham64_encrypt,
     .decrypt = cham64_decrypt,
+    .clear = cham_clear,
 };
 const block_cipher cham128_128_block_cipher = {
     .block_size = 16,
@@ -183,6 +189,7 @@ const block_cipher cham128_128_block_cipher = {
     .expand_key = cham128_128_expand_key,
     .encrypt = cham128_encrypt,
     .decrypt = cham128_decrypt,
+    .clear = cham_clear,
 };
 const block_cipher cham128_256_block_cipher = {
     .block_size = 16,
@@ -190,4 +197,5 @@ const block_cipher cham128_256_block_cipher = {
     .expand_key = cham128_256_expand_key,
     .encrypt = cham128_encrypt,
     .decrypt = cham128_decrypt,
+    .clear = cham_clear,
 };

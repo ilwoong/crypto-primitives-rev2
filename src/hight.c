@@ -135,10 +135,16 @@ void hight_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     out[7] = b[7];
 }
 
+void hight_clear(void *ctx)
+{
+    secure_zero(ctx, sizeof(hight_ctx));
+}
+
 const block_cipher hight_block_cipher = {
     .block_size = 8,
     .key_size = 16,
     .expand_key = hight_expand_key,
     .encrypt = hight_encrypt,
     .decrypt = hight_decrypt,
+    .clear = hight_clear,
 };
