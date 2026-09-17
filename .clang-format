@@ -1,0 +1,137 @@
+# .clang-format
+BasedOnStyle: LLVM
+
+# ============================================================
+# 기본 설정
+# ============================================================
+
+# 들여쓰기: 공백 4칸
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# 한 줄 최대 길이
+ColumnLimit: 120
+
+
+# ============================================================
+# 중괄호
+# ============================================================
+
+BreakBeforeBraces: Custom
+
+BraceWrapping:
+  # 함수의 { 는 다음 줄
+  AfterFunction: true
+
+  # struct / enum / union의 { 는 같은 줄
+  AfterStruct: false
+  AfterEnum: false
+  AfterUnion: false
+
+  # C++ class의 { 도 같은 줄
+  AfterClass: false
+
+  # if / for / while / switch 등의 { 는 같은 줄
+  AfterControlStatement: Never
+
+  # namespace의 { 는 같은 줄
+  AfterNamespace: false
+
+  # extern "C"의 { 는 같은 줄
+  AfterExternBlock: false
+
+  # else는 } 다음 줄
+  BeforeElse: true
+
+  # catch도 } 다음 줄
+  BeforeCatch: true
+
+  # do-while의 while도 다음 줄
+  BeforeWhile: true
+
+  # 빈 함수/구조체/namespace도 규칙 적용
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+
+
+# ============================================================
+# 짧은 구문
+# ============================================================
+
+# 짧더라도 한 줄로 합치지 않음
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+
+
+# ============================================================
+# 포인터 / Reference
+# ============================================================
+
+# int *ptr;
+# const char *str;
+PointerAlignment: Right
+ReferenceAlignment: Pointer
+
+
+# ============================================================
+# 함수 인자
+# ============================================================
+
+BinPackArguments: true
+BinPackParameters: true
+
+AlignAfterOpenBracket: Align
+
+
+# ============================================================
+# switch / case
+# ============================================================
+
+IndentCaseLabels: false
+IndentCaseBlocks: false
+
+
+# ============================================================
+# 연속된 선언 / 대입 정렬
+# ============================================================
+
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+
+
+# ============================================================
+# 공백
+# ============================================================
+
+# if (...), for (...), while (...)
+SpaceBeforeParens: ControlStatements
+
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+
+# ============================================================
+# include
+# ============================================================
+
+SortIncludes: CaseSensitive
+
+
+# ============================================================
+# C++
+# ============================================================
+
+Cpp11BracedListStyle: true
+NamespaceIndentation: None
+
+
+# ============================================================
+# 기타
+# ============================================================
+
+MaxEmptyLinesToKeep: 1
+ReflowComments: true

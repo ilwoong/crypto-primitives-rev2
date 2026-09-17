@@ -1,0 +1,97 @@
+#include "crypto-primitives/lea-unrolled.h"
+
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+#define BLOCK_SIZE 16
+
+typedef struct {
+    const char *name;
+    uint8_t key[32];
+    uint8_t plaintext[BLOCK_SIZE];
+    uint8_t ciphertext[BLOCK_SIZE];
+} test_vector;
+
+static const test_vector TV_LEA128 = {
+    .name = "LEA-128",
+    .key = {0x0f, 0x1e, 0x2d, 0x3c, 0x4b, 0x5a, 0x69, 0x78, 0x87, 0x96, 0xa5, 0xb4, 0xc3, 0xd2, 0xe1, 0xf0},
+    .plaintext = {0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f},
+    .ciphertext = {0x9f, 0xc8, 0x4e, 0x35, 0x28, 0xc6, 0xc6, 0x18, 0x55, 0x32, 0xc7, 0xa7, 0x04, 0x64, 0x8b, 0xfd},
+};
+
+static const test_vector TV_LEA192 = {
+    .name = "LEA-192",
+    .key = {0x0f, 0x1e, 0x2d, 0x3c, 0x4b, 0x5a, 0x69, 0x78, 0x87, 0x96, 0xa5, 0xb4,
+            0xc3, 0xd2, 0xe1, 0xf0, 0xf0, 0xe1, 0xd2, 0xc3, 0xb4, 0xa5, 0x96, 0x87},
+    .plaintext = {0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f},
+    .ciphertext = {0x6f, 0xb9, 0x5e, 0x32, 0x5a, 0xad, 0x1b, 0x87, 0x8c, 0xdc, 0xf5, 0x35, 0x76, 0x74, 0xc6, 0xf2},
+};
+
+static const test_vector TV_LEA256 = {
+    .name = "LEA-256",
+    .key = {0x0f, 0x1e, 0x2d, 0x3c, 0x4b, 0x5a, 0x69, 0x78, 0x87, 0x96, 0xa5, 0xb4, 0xc3, 0xd2, 0xe1, 0xf0,
+            0xf0, 0xe1, 0xd2, 0xc3, 0xb4, 0xa5, 0x96, 0x87, 0x78, 0x69, 0x5a, 0x4b, 0x3c, 0x2d, 0x1e, 0x0f},
+    .plaintext = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f},
+    .ciphertext = {0xd6, 0x51, 0xaf, 0xf6, 0x47, 0xb1, 0x89, 0xc1, 0x3a, 0x89, 0x00, 0xca, 0x27, 0xf9, 0xe1, 0x97},
+};
+
+static void print_block(const char *label, const uint8_t *block)
+{
+    printf("    %-8s: ", label);
+    for (size_t i = 0; i < BLOCK_SIZE; ++i) {
+        printf("%02x", block[i]);
+    }
+    printf("\n");
+}
+
+static int check_block(const char *test_name, const char *what, const uint8_t *actual, const uint8_t *expected)
+{
+    if (memcmp(actual, expected, BLOCK_SIZE) == 0) {
+        return 0;
+    }
+    printf("[FAIL] %s: %s mismatch\n", test_name, what);
+    print_block("expected", expected);
+    print_block("actual", actual);
+    return 1;
+}
+
+static int run_test_vector(const block_cipher *cipher, const test_vector *tv)
+{
+    lea_unrolled_ctx ctx;
+    uint8_t buf[BLOCK_SIZE];
+    int failures = 0;
+
+    cipher->expand_key(&ctx, tv->key);
+
+    cipher->encrypt(&ctx, buf, tv->plaintext);
+    failures += check_block(tv->name, "encrypt", buf, tv->ciphertext);
+
+    cipher->decrypt(&ctx, buf, tv->ciphertext);
+    failures += check_block(tv->name, "decrypt", buf, tv->plaintext);
+
+    memcpy(buf, tv->plaintext, BLOCK_SIZE);
+    cipher->encrypt(&ctx, buf, buf);
+    failures += check_block(tv->name, "in-place encrypt", buf, tv->ciphertext);
+
+    cipher->decrypt(&ctx, buf, buf);
+    failures += check_block(tv->name, "in-place decrypt", buf, tv->plaintext);
+
+    if (failures == 0) {
+        printf("[PASS] %s\n", tv->name);
+    }
+    return failures;
+}
+
+int main(void)
+{
+    int failures = 0;
+
+    failures += run_test_vector(&lea128_unrolled_block_cipher, &TV_LEA128);
+    failures += run_test_vector(&lea192_unrolled_block_cipher, &TV_LEA192);
+    failures += run_test_vector(&lea256_unrolled_block_cipher, &TV_LEA256);
+
+    printf("%d failure(s)\n", failures);
+    return failures == 0 ? 0 : 1;
+}

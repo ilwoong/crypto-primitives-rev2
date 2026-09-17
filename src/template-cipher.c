@@ -7,7 +7,7 @@ static const size_t NUM_ROUNDS = 1;
 static const size_t BLOCK_SIZE = 16;
 static const size_t MASTER_KEY_SIZE = 16;
 
-const BlockCipher TemplateBlockCipher = {
+const block_cipher template_block_cipher = {
     .expand_key = template_expand_key,
     .encrypt = template_encrypt,
     .decrypt = template_decrypt,
