@@ -71,7 +71,12 @@ lsh256_message_digest.final(&ctx, out);
 
 ```
 .
+├── .claude/agents/             # Claude Code용 역할 래퍼
+├── .codex/agents/              # Codex용 역할 래퍼
+├── .hermes.md                   # Hermes 오케스트레이터 안내
+├── .hermes/agents/              # Hermes용 역할 안내 래퍼
 ├── CMakeLists.txt
+├── docs/agents/                # 도구 중립적인 공용 역할 지시문
 ├── include/crypto-primitives/
 │   ├── cipher.h              # block_cipher 공통 인터페이스
 │   ├── message-digest.h      # message_digest 공통 인터페이스
@@ -120,6 +125,12 @@ ctest --test-dir build --output-on-failure
 - `<algo>-kat-test`: `tests/vectors/<algo>/`의 `.rsp` 파일을 읽어 해당 알고리즘의 모든 변형을 검증합니다. 블록 암호 파일은 NIST CAVS 형식(`ECBVarKey*`, `ECBVarTxt*`)을 따르며 `[ENCRYPT]`와 `[DECRYPT]` 섹션이 있습니다. 해시 파일(`*ShortMsg.rsp`)은 NIST SHA 벡터 형식(`Len`, `Msg`, `MD`)이며, 0~512바이트의 모든 길이를 담고 있어 블록 경계 처리를 확인합니다. 해시 KAT는 메시지를 한 번에 넣는 경우와 잘게 나눠 넣는 경우를 모두 검사합니다.
 
 GitHub Actions(`.github/workflows/ci.yml`)가 `main`으로의 push와 모든 PR에서 같은 검사를 돌립니다. gcc와 clang 각각 일반 빌드와 UBSan+ASan 빌드를 `-Werror`로 컴파일해 CTest를 실행하고, clang-format 검사를 별도 job으로 돌립니다.
+
+## Hermes 에이전트 파이프라인
+
+Hermes에서는 `.hermes.md`를 먼저 읽으므로 오케스트레이터가 `AGENTS.md`, 이 README, 그리고 각 `docs/agents/<role>.md`도 직접 읽습니다. `.hermes/agents/`의 역할 래퍼는 역할 설명과 위임 시 유의점을 담는 안내 문서이며 Hermes가 자동 검색하거나 `tools:`·`model_hint:`를 강제하지 않습니다.
+
+`delegate_task`로 실행할 때 오케스트레이터는 역할별 쓰기 범위와 마무리 보고 형식을 위임 목표에 명시하고, reviewer와 documenter 같은 제한 역할 전후에는 `git status --porcelain`, `git diff HEAD`, 신규 파일 전체 내용을 비교합니다. 역할별 모델 선택이 필요하면 별도 Hermes 프로세스를 `hermes chat --oneshot -m <model> --in <repo>`로 실행합니다. 세부 순서와 재검증 루프는 `AGENTS.md`의 "에이전트 파이프라인"을 따릅니다.
 
 테스트 실행 파일을 직접 실행할 수도 있습니다. KAT 테스트는 벡터 디렉터리를 인자로 받습니다.
 

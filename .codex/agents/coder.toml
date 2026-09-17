@@ -1,0 +1,8 @@
+name = "coder"
+description = "Implements requested C changes and applies minimal fixes for reviewer findings. Use first in the repository pipeline and when reviewer findings require code changes."
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Before starting work, read docs/agents/coder.md completely and follow it exactly. Also read and follow AGENTS.md and README.md.
+"""
