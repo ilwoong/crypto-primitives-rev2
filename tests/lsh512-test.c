@@ -83,6 +83,19 @@ static int check_digest(const char *test_name, const char *what, const uint8_t *
     return 1;
 }
 
+static int check_reset(const char *name, const void *ctx, size_t size, const message_digest *md)
+{
+    // final zeroizes the context and then calls init, so it must match a context built the same way, byte for byte.
+    lsh512_ctx fresh;
+    secure_zero(&fresh, sizeof(fresh));
+    md->init(&fresh);
+    if (memcmp(ctx, &fresh, size) != 0) {
+        printf("[FAIL] %s: context not reset after final\n", name);
+        return 1;
+    }
+    return 0;
+}
+
 static int run_test_vector(const message_digest *md, const test_vector *tv)
 {
     lsh512_ctx ctx;
@@ -93,6 +106,7 @@ static int run_test_vector(const message_digest *md, const test_vector *tv)
     md->update(&ctx, tv->message, tv->message_len);
     md->final(&ctx, out);
     failures += check_digest(tv->name, "single update", out, tv->digest);
+    failures += check_reset(tv->name, &ctx, sizeof(ctx), md);
 
     md->init(&ctx);
     for (size_t i = 0; i < tv->message_len; ++i) {

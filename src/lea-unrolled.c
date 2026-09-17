@@ -31,7 +31,7 @@ void lea128_unrolled_expand_key(void *ctx, const uint8_t *master_key)
     uint32_t t[4];
     memcpy(t, master_key, 16);
 
-    uint32_t *rk = (uint32_t *)c->round_keys;
+    uint32_t *rk = c->round_keys;
     for (size_t i = 0; i < LEA128_ROUNDS; ++i) {
         uint32_t delta = DELTA[i & 3];
         t[0] = rol32(t[0] + rol32(delta, i), 1);
@@ -57,7 +57,7 @@ void lea192_unrolled_expand_key(void *ctx, const uint8_t *master_key)
     uint32_t t[6];
     memcpy(t, master_key, 24);
 
-    uint32_t *rk = (uint32_t *)c->round_keys;
+    uint32_t *rk = c->round_keys;
     for (size_t i = 0; i < LEA192_ROUNDS; ++i) {
         uint32_t delta = DELTA[i % 6];
         t[0] = rol32(t[0] + rol32(delta, i), 1);
@@ -85,7 +85,7 @@ void lea256_unrolled_expand_key(void *ctx, const uint8_t *master_key)
     uint32_t t[8];
     memcpy(t, master_key, 32);
 
-    uint32_t *rk = (uint32_t *)c->round_keys;
+    uint32_t *rk = c->round_keys;
     for (size_t i = 0; i < LEA256_ROUNDS; ++i) {
         uint32_t delta = DELTA[i & 7];
         t[(6 * i) & 7] = rol32(t[(6 * i) & 7] + rol32(delta, i), 1);
@@ -108,7 +108,7 @@ void lea256_unrolled_expand_key(void *ctx, const uint8_t *master_key)
 void lea_unrolled_encrypt(void *ctx, uint8_t *out, const uint8_t *in)
 {
     lea_unrolled_ctx *c = (lea_unrolled_ctx *)ctx;
-    const uint32_t *rk = (const uint32_t *)c->round_keys;
+    const uint32_t *rk = c->round_keys;
 
     uint32_t b0, b1, b2, b3;
     memcpy(&b0, in, 4);
@@ -147,7 +147,7 @@ void lea_unrolled_encrypt(void *ctx, uint8_t *out, const uint8_t *in)
 void lea_unrolled_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
 {
     lea_unrolled_ctx *c = (lea_unrolled_ctx *)ctx;
-    const uint32_t *rk = (const uint32_t *)c->round_keys;
+    const uint32_t *rk = c->round_keys + 6 * c->rounds;
 
     uint32_t b0, b1, b2, b3;
     memcpy(&b0, in, 4);
@@ -155,27 +155,26 @@ void lea_unrolled_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     memcpy(&b2, in + 8, 4);
     memcpy(&b3, in + 12, 4);
 
-    rk += 6 * (c->rounds - 1);
     for (size_t i = 0; i < c->rounds; i += 4) {
+        rk -= 6;
         b0 = (ror32(b0, 9) - (b3 ^ rk[0])) ^ rk[1];
         b1 = (rol32(b1, 5) - (b0 ^ rk[2])) ^ rk[3];
         b2 = (rol32(b2, 3) - (b1 ^ rk[4])) ^ rk[5];
-        rk -= 6;
 
+        rk -= 6;
         b3 = (ror32(b3, 9) - (b2 ^ rk[0])) ^ rk[1];
         b0 = (rol32(b0, 5) - (b3 ^ rk[2])) ^ rk[3];
         b1 = (rol32(b1, 3) - (b0 ^ rk[4])) ^ rk[5];
-        rk -= 6;
 
+        rk -= 6;
         b2 = (ror32(b2, 9) - (b1 ^ rk[0])) ^ rk[1];
         b3 = (rol32(b3, 5) - (b2 ^ rk[2])) ^ rk[3];
         b0 = (rol32(b0, 3) - (b3 ^ rk[4])) ^ rk[5];
-        rk -= 6;
 
+        rk -= 6;
         b1 = (ror32(b1, 9) - (b0 ^ rk[0])) ^ rk[1];
         b2 = (rol32(b2, 5) - (b1 ^ rk[2])) ^ rk[3];
         b3 = (rol32(b3, 3) - (b2 ^ rk[4])) ^ rk[5];
-        rk -= 6;
     }
 
     memcpy(out, &b0, 4);
@@ -184,9 +183,32 @@ void lea_unrolled_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     memcpy(out + 12, &b3, 4);
 }
 
-const block_cipher lea128_unrolled_block_cipher = {lea128_unrolled_expand_key, lea_unrolled_encrypt,
-                                                   lea_unrolled_decrypt};
-const block_cipher lea192_unrolled_block_cipher = {lea192_unrolled_expand_key, lea_unrolled_encrypt,
-                                                   lea_unrolled_decrypt};
-const block_cipher lea256_unrolled_block_cipher = {lea256_unrolled_expand_key, lea_unrolled_encrypt,
-                                                   lea_unrolled_decrypt};
+void lea_unrolled_clear(void *ctx)
+{
+    secure_zero(ctx, sizeof(lea_unrolled_ctx));
+}
+
+const block_cipher lea128_unrolled_block_cipher = {
+    .block_size = 16,
+    .key_size = 16,
+    .expand_key = lea128_unrolled_expand_key,
+    .encrypt = lea_unrolled_encrypt,
+    .decrypt = lea_unrolled_decrypt,
+    .clear = lea_unrolled_clear,
+};
+const block_cipher lea192_unrolled_block_cipher = {
+    .block_size = 16,
+    .key_size = 24,
+    .expand_key = lea192_unrolled_expand_key,
+    .encrypt = lea_unrolled_encrypt,
+    .decrypt = lea_unrolled_decrypt,
+    .clear = lea_unrolled_clear,
+};
+const block_cipher lea256_unrolled_block_cipher = {
+    .block_size = 16,
+    .key_size = 32,
+    .expand_key = lea256_unrolled_expand_key,
+    .encrypt = lea_unrolled_encrypt,
+    .decrypt = lea_unrolled_decrypt,
+    .clear = lea_unrolled_clear,
+};

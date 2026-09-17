@@ -432,21 +432,30 @@ static inline void decrypt_last_round(uint8_t *block, const uint8_t *rk)
 }
 
 const block_cipher aes128_lut2_block_cipher = {
+    .block_size = 16,
+    .key_size = 16,
     .expand_key = aes128_lut2_expand_key,
     .encrypt = aes_lut2_encrypt,
     .decrypt = aes_lut2_decrypt,
+    .clear = aes_lut2_clear,
 };
 
 const block_cipher aes192_lut2_block_cipher = {
+    .block_size = 16,
+    .key_size = 24,
     .expand_key = aes192_lut2_expand_key,
     .encrypt = aes_lut2_encrypt,
     .decrypt = aes_lut2_decrypt,
+    .clear = aes_lut2_clear,
 };
 
 const block_cipher aes256_lut2_block_cipher = {
+    .block_size = 16,
+    .key_size = 32,
     .expand_key = aes256_lut2_expand_key,
     .encrypt = aes_lut2_encrypt,
     .decrypt = aes_lut2_decrypt,
+    .clear = aes_lut2_clear,
 };
 
 void aes128_lut2_expand_key(void *ctx, const uint8_t *master_key)
@@ -454,7 +463,7 @@ void aes128_lut2_expand_key(void *ctx, const uint8_t *master_key)
     aes_lut2_ctx *c = (aes_lut2_ctx *)ctx;
     c->rounds = 10;
 
-    uint32_t *rk = (uint32_t *)c->round_keys;
+    uint32_t *rk = c->round_keys;
     memcpy(rk, master_key, 16);
 
     for (int i = 0; i < 10; ++i) {
@@ -471,7 +480,7 @@ void aes192_lut2_expand_key(void *ctx, const uint8_t *master_key)
     aes_lut2_ctx *c = (aes_lut2_ctx *)ctx;
     c->rounds = 12;
 
-    uint32_t *rk = (uint32_t *)c->round_keys;
+    uint32_t *rk = c->round_keys;
     memcpy(rk, master_key, 24);
 
     for (int i = 0; i < 7; ++i) {
@@ -496,7 +505,7 @@ void aes256_lut2_expand_key(void *ctx, const uint8_t *master_key)
     aes_lut2_ctx *c = (aes_lut2_ctx *)ctx;
     c->rounds = 14;
 
-    uint32_t *rk = (uint32_t *)c->round_keys;
+    uint32_t *rk = c->round_keys;
     memcpy(rk, master_key, 32);
 
     for (int i = 0; i < 7; ++i) {
@@ -521,7 +530,7 @@ void aes256_lut2_expand_key(void *ctx, const uint8_t *master_key)
 void aes_lut2_encrypt(void *ctx, uint8_t *out, const uint8_t *in)
 {
     aes_lut2_ctx *c = (aes_lut2_ctx *)ctx;
-    const uint8_t *rks = c->round_keys;
+    const uint8_t *rks = (const uint8_t *)c->round_keys;
     uint8_t block[16] = {0};
     memcpy(block, in, 16);
 
@@ -540,7 +549,7 @@ void aes_lut2_encrypt(void *ctx, uint8_t *out, const uint8_t *in)
 void aes_lut2_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
 {
     aes_lut2_ctx *c = (aes_lut2_ctx *)ctx;
-    const uint8_t *rks = c->round_keys;
+    const uint8_t *rks = (const uint8_t *)c->round_keys;
     uint8_t block[16] = {0};
     memcpy(block, in, 16);
 
@@ -556,4 +565,9 @@ void aes_lut2_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     decrypt_last_round(block, rks);
 
     memcpy(out, block, 16);
+}
+
+void aes_lut2_clear(void *ctx)
+{
+    secure_zero(ctx, sizeof(aes_lut2_ctx));
 }

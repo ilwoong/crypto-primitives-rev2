@@ -9,7 +9,7 @@ cmake -S . -B build && cmake --build build          # 빌드 (-Wall -Wextra -Wpe
 ctest --test-dir build --output-on-failure           # 전체 테스트 (CTest)
 cmake -S . -B build/sanitize -DCMAKE_C_FLAGS="-fsanitize=undefined,address -fno-sanitize-recover=all" \
   && cmake --build build/sanitize && ctest --test-dir build/sanitize --output-on-failure   # UBSan+ASan
-clang-format --dry-run --Werror src/*.c include/crypto-primitives/*.h tests/*.c            # 포맷 검사
+clang-format --dry-run --Werror src/*.c include/crypto-primitives/*.h tests/*.c tests/*.h  # 포맷 검사
 ```
 
 `build/`는 gitignore 대상이므로 sanitizer 빌드도 `build/sanitize`처럼 그 안에 둔다.
@@ -46,8 +46,9 @@ README의 "코드 스타일"에 더해 다음을 지킨다.
 
 - 식별자 전부 snake_case (구조체 타입 포함). `BlockCipher` 같은 PascalCase 금지.
 - 인스턴스 이름: `<algo><keybits>_<variant>_block_cipher` (예: `aes128_lut1_block_cipher`). 키 길이가 하나면 `<algo>_block_cipher`. CHAM은 블록/키 둘 다 표기 (`cham64_128_block_cipher`).
-- `expand_key`가 키 길이를 받지 않으므로 키 길이마다 `block_cipher` 인스턴스를 따로 둔다. 컨텍스트와 encrypt/decrypt는 공유.
-- 컨텍스트의 라운드 키는 타입 있는 배열 (`uint32_t round_keys[..]`). `uint8_t` 버퍼를 넓은 타입 포인터로 캐스트하지 않는다.
+- `expand_key`가 키 길이를 받지 않으므로 키 길이마다 `block_cipher` 인스턴스를 따로 둔다. 컨텍스트와 encrypt/decrypt/clear는 공유.
+- 블록 암호는 `<algo>_clear(void *ctx)`로 컨텍스트 전체를 `secure_zero`(`secure-zero.h`)로 지우고 인스턴스의 `.clear`에 연결한다. 해시는 `final`이 출력 뒤 `secure_zero`로 지우고 `init`한다. 단위 테스트와 KAT가 NULL이면 실패시킨다.
+- 마스터 키 입력은 항상 `const uint8_t *`다. 라운드 키 타입은 알고리즘마다 통일할 필요 없이 구현에 맞는 타입(`uint8_t`, `uint16_t`, `uint32_t`, 2차원 배열 등)을 쓴다. 단, `uint8_t` 버퍼를 선언해 놓고 넓은 타입 포인터로 캐스트해 쓰지는 않는다. 워드로 쓸 거면 워드 배열로 선언한다.
 - 회전 함수 인자는 `unsigned rot`, for 루프는 `++i`.
 - 테이블은 원본에서 스크립트로 추출해 각 `src/<name>.c`에 `static const`로 인라인. 손으로 옮기지 않는다.
 - 주석은 "왜"가 비자명할 때만. 파일 상단 라이선스 헤더 없음.
@@ -70,4 +71,4 @@ README의 "코드 스타일"에 더해 다음을 지킨다.
 - big-endian 미검증: AES, LEA, CHAM은 워드를 호스트 바이트 순서로 읽는다.
 - SIMD 변형(`aes.ni.c`, `lea.avx2.c`, `lsh*.sse4.c`, `lsh*.avx2.c`)은 x86 전용이라 의도적으로 제외했다. 추가한다면 CMake에서 컴파일러 플래그를 감지해 선택적으로 빌드한다.
 - 원본의 `tools/hex.c`, `*/print_tables.c`, `seed_tool.c`는 유틸리티/테이블 생성기라 포팅하지 않는다.
-- 운용 모드(ECB, CTR)는 미포팅. `block_cipher`에 블록 크기 정보가 없어 설계 결정이 먼저 필요하다. 사용자에게 제안한 뒤 진행한다.
+- 운용 모드(ECB, CTR)는 미포팅. `block_cipher`의 `block_size`, `key_size`로 크기는 알 수 있으나, 모드 인터페이스(컨텍스트, IV/카운터 소유권, 파일 배치)는 설계 결정이 먼저 필요하다. 사용자에게 제안한 뒤 진행한다.

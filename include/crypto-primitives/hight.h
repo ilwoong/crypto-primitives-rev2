@@ -15,5 +15,6 @@ extern const block_cipher hight_block_cipher;
 void hight_expand_key(void *ctx, const uint8_t *master_key);
 void hight_encrypt(void *ctx, uint8_t *out, const uint8_t *in);
 void hight_decrypt(void *ctx, uint8_t *out, const uint8_t *in);
+void hight_clear(void *ctx);
 
 #endif

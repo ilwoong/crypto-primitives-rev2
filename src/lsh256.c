@@ -186,6 +186,7 @@ void lsh256_final(void *ctx, uint8_t *out)
         store_le32(out + 4 * i, c->cv[i] ^ c->cv[i + 8]);
     }
 
+    secure_zero(c, sizeof(*c));
     lsh256_init(c);
 }
 

@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "secure-zero.h"
+
 typedef void (*message_digest_init_fn)(void *ctx);
 typedef void (*message_digest_update_fn)(void *ctx, const uint8_t *in, size_t len);
 typedef void (*message_digest_final_fn)(void *ctx, uint8_t *out);

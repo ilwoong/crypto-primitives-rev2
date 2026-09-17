@@ -14,15 +14,18 @@ model: opus
 ## 레이아웃 (알고리즘 하나 = 파일 셋 + CMake 한 줄)
 - `include/crypto-primitives/<name>.h`: 컨텍스트 구조체, 함수 선언, `extern const block_cipher`(또는 `message_digest`) 인스턴스 선언. `cipher.h` / `message-digest.h`를 include.
 - `src/<name>.c`: 구현 하나. 테이블은 `static const`로 이 파일 안에 인라인. 원본에서 스크립트로 추출하고 손으로 옮기지 않습니다.
-- `tests/<name>-test.c`: `tests/template-cipher-test.c`의 구조를 그대로 따릅니다 (test_vector 배열, `[PASS]`/`[FAIL]` 출력, encrypt/decrypt/in-place 확인, 실패 수를 종료 코드로 반환). 해시는 한 번에 넣기와 바이트 단위 update를 모두 확인합니다.
-- `CMakeLists.txt`: `add_cipher(<name>)` 또는 `add_message_digest(<name>)` 한 줄. KAT 테스트는 기존 `<algo>-kat-test` 블록과 같은 방식으로 등록합니다.
+- `tests/<name>-test.c`: `tests/template-cipher-test.c`의 구조를 그대로 따릅니다 (test_vector 배열, `[PASS]`/`[FAIL]` 출력, encrypt/decrypt/in-place 확인, 실패 수를 종료 코드로 반환). 블록/키 길이는 별도 상수를 두지 않고 인스턴스의 `block_size`/`key_size`를 읽으며, 배열 크기용 `MAX_BLOCK_SIZE`만 두고 `run_test_vector` 첫머리에서 `cipher->block_size > MAX_BLOCK_SIZE`를 가드합니다. 해시는 한 번에 넣기와 바이트 단위 update를 모두 확인합니다.
+- `CMakeLists.txt`: `add_cipher(<name>)` 또는 `add_message_digest(<name>)` 한 줄. KAT 테스트는 `add_kat_test(<algo> <vectors-subdir> <lib>...)` 한 줄로 등록합니다.
+- `tests/<algo>-kat-test.c`: 파서를 직접 쓰지 않고 `tests/kat-common.h`의 공용 하네스를 씁니다. 컨텍스트 저장소(`static <algo>_ctx ctx_<algo>;`), `ENTRIES[]`(`kat_block_cipher_entry`: 이름, 인스턴스, ctx / 해시는 `kat_message_digest_entry`. 키/블록/다이제스트 길이는 인스턴스의 크기 필드에서 읽음), `FILES[]`를 선언하고 `main`에서 `kat_block_cipher_main` 또는 `kat_message_digest_main`을 호출합니다. 기존 `tests/aes-kat-test.c`, `tests/lsh-kat-test.c`를 본보기로 삼습니다.
 - 변형 이름은 `<algo>-<variant>` (예: `aes-lut1`, `hight-lut`). 파일명은 하이픈, 식별자는 밑줄.
 
 ## 코드 규칙
 - 식별자 전부 snake_case (구조체 타입 포함). PascalCase 금지.
 - 인스턴스 이름: `<algo><keybits>_<variant>_block_cipher` (예: `aes128_lut1_block_cipher`). 키 길이가 하나면 `<algo>_block_cipher`. CHAM은 블록/키 둘 다 표기 (`cham64_128_block_cipher`).
 - `expand_key`는 키 길이를 받지 않으므로 키 길이마다 인스턴스를 따로 둡니다. 컨텍스트와 encrypt/decrypt는 공유.
-- 라운드 키는 타입 있는 배열 (`uint32_t round_keys[..]`). `uint8_t` 버퍼를 넓은 타입 포인터로 캐스트하지 않습니다.
+- `block_cipher` 인스턴스는 지정 초기화로 쓰고 `.block_size`, `.key_size`(바이트)를 반드시 채웁니다. 값이 틀리면 KAT 하네스가 벡터에 맞는 항목을 찾지 못해 실패합니다.
+- `void <algo>_clear(void *ctx)`를 구현해 `secure_zero(ctx, sizeof(<algo>_ctx))`로 컨텍스트 전체를 지우고 모든 인스턴스의 `.clear`에 연결합니다. 빠뜨리면 단위 테스트와 KAT가 `clear is NULL`로 실패합니다. 일반 `memset`은 최적화로 제거될 수 있으니 쓰지 않습니다.
+- 마스터 키 입력은 항상 `const uint8_t *`입니다. 라운드 키 타입은 구현에 맞게 고르면 되고 알고리즘 간 통일하지 않습니다. 단, `uint8_t` 버퍼를 넓은 타입 포인터로 캐스트해 쓰지 않습니다. 워드로 쓸 거면 워드 배열로 선언합니다.
 - 회전 함수 인자는 `unsigned rot`. 회전량이 워드 폭 이상이 될 수 있으면 마스킹. `x >> 32` 같은 미정의 시프트 금지.
 - for 루프는 `++i`.
 - 주석은 "왜"가 비자명할 때만 (시프트 상수의 근거, 상수 시간 트릭, 스펙과 다르게 구현한 이유). 파일 상단 라이선스 헤더 없음.

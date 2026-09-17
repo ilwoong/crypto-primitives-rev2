@@ -446,6 +446,32 @@ void aria_lut_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     crypt_block(c->dec_round_keys, c->rounds, out, in);
 }
 
-const block_cipher aria128_lut_block_cipher = {aria128_lut_expand_key, aria_lut_encrypt, aria_lut_decrypt};
-const block_cipher aria192_lut_block_cipher = {aria192_lut_expand_key, aria_lut_encrypt, aria_lut_decrypt};
-const block_cipher aria256_lut_block_cipher = {aria256_lut_expand_key, aria_lut_encrypt, aria_lut_decrypt};
+void aria_lut_clear(void *ctx)
+{
+    secure_zero(ctx, sizeof(aria_lut_ctx));
+}
+
+const block_cipher aria128_lut_block_cipher = {
+    .block_size = BLOCK_SIZE,
+    .key_size = 16,
+    .expand_key = aria128_lut_expand_key,
+    .encrypt = aria_lut_encrypt,
+    .decrypt = aria_lut_decrypt,
+    .clear = aria_lut_clear,
+};
+const block_cipher aria192_lut_block_cipher = {
+    .block_size = BLOCK_SIZE,
+    .key_size = 24,
+    .expand_key = aria192_lut_expand_key,
+    .encrypt = aria_lut_encrypt,
+    .decrypt = aria_lut_decrypt,
+    .clear = aria_lut_clear,
+};
+const block_cipher aria256_lut_block_cipher = {
+    .block_size = BLOCK_SIZE,
+    .key_size = 32,
+    .expand_key = aria256_lut_expand_key,
+    .encrypt = aria_lut_encrypt,
+    .decrypt = aria_lut_decrypt,
+    .clear = aria_lut_clear,
+};

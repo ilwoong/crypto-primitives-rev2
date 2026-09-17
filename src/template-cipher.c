@@ -3,14 +3,15 @@
 #include <stddef.h>
 #include <string.h>
 
-static const size_t NUM_ROUNDS = 1;
-static const size_t BLOCK_SIZE = 16;
-static const size_t MASTER_KEY_SIZE = 16;
+enum { NUM_ROUNDS = 1, BLOCK_SIZE = 16, MASTER_KEY_SIZE = 16 };
 
 const block_cipher template_block_cipher = {
+    .block_size = BLOCK_SIZE,
+    .key_size = MASTER_KEY_SIZE,
     .expand_key = template_expand_key,
     .encrypt = template_encrypt,
     .decrypt = template_decrypt,
+    .clear = template_clear,
 };
 
 void template_expand_key(void *ctx, const uint8_t *master_key)
@@ -35,4 +36,9 @@ void template_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     for (size_t i = 0; i < BLOCK_SIZE; ++i) {
         out[i] ^= actual_ctx->round_keys[i];
     }
+}
+
+void template_clear(void *ctx)
+{
+    secure_zero(ctx, sizeof(template_cipher_ctx));
 }

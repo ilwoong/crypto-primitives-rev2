@@ -24,5 +24,6 @@ void cham64_encrypt(void *ctx, uint8_t *out, const uint8_t *in);
 void cham64_decrypt(void *ctx, uint8_t *out, const uint8_t *in);
 void cham128_encrypt(void *ctx, uint8_t *out, const uint8_t *in);
 void cham128_decrypt(void *ctx, uint8_t *out, const uint8_t *in);
+void cham_clear(void *ctx);
 
 #endif

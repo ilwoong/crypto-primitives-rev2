@@ -21,5 +21,6 @@ void aria192_expand_key(void *ctx, const uint8_t *master_key);
 void aria256_expand_key(void *ctx, const uint8_t *master_key);
 void aria_encrypt(void *ctx, uint8_t *out, const uint8_t *in);
 void aria_decrypt(void *ctx, uint8_t *out, const uint8_t *in);
+void aria_clear(void *ctx);
 
 #endif
