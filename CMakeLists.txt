@@ -44,3 +44,8 @@ add_executable(aes-kat-test tests/aes-kat-test.c)
 target_include_directories(aes-kat-test PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(aes-kat-test PRIVATE aes aes-lut1 aes-lut2 aes-lut3)
 add_test(NAME aes-kat-test COMMAND aes-kat-test ${PROJECT_SOURCE_DIR}/tests/vectors/aes)
+
+add_executable(lea-kat-test tests/lea-kat-test.c)
+target_include_directories(lea-kat-test PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(lea-kat-test PRIVATE lea lea-unrolled)
+add_test(NAME lea-kat-test COMMAND lea-kat-test ${PROJECT_SOURCE_DIR}/tests/vectors/lea)
