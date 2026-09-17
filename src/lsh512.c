@@ -209,6 +209,7 @@ void lsh512_final(void *ctx, uint8_t *out)
         store_le64(out + 8 * i, c->cv[i] ^ c->cv[i + 8]);
     }
 
+    secure_zero(c, sizeof(*c));
     lsh512_init(c);
 }
 

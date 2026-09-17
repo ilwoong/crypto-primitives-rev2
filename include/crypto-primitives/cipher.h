@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "secure-zero.h"
+
 typedef void (*expand_key_fn)(void *ctx, const uint8_t *master_key);
 typedef void (*crypt_block_fn)(void *ctx, uint8_t *out, const uint8_t *in);
 typedef void (*clear_ctx_fn)(void *ctx);
@@ -16,14 +18,5 @@ typedef struct {
     crypt_block_fn decrypt;
     clear_ctx_fn clear;
 } block_cipher;
-
-// volatile keeps the compiler from dropping the stores as dead once the context is no longer read.
-static inline void secure_zero(void *p, size_t n)
-{
-    volatile uint8_t *v = (volatile uint8_t *)p;
-    for (size_t i = 0; i < n; ++i) {
-        v[i] = 0;
-    }
-}
 
 #endif

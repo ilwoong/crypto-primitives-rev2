@@ -32,7 +32,7 @@ C11로 작성한 블록 암호와 해시 함수 구현 모음입니다. 블록 �
 | LSH-256-256 | `lsh256` | `lsh256_ctx` | `lsh256_message_digest` | 32 / 128 바이트 |
 | LSH-512-512 | `lsh512` | `lsh512_ctx` | `lsh512_message_digest` | 64 / 256 바이트 |
 
-`block_cipher`는 함수 포인터 외에 `block_size`와 `key_size`를 담고 있어, 알고리즘을 모르는 코드도 버퍼 크기를 알 수 있습니다. 키 사용이 끝나면 `clear(&ctx)`로 컨텍스트 전체(라운드 키 포함)를 0으로 지우며, `cipher.h`의 `secure_zero`를 써서 컴파일러 최적화로 제거되지 않습니다. `message_digest`는 `final`이 컨텍스트를 초기화하므로 별도 `clear` 함수가 없습니다.
+`block_cipher`는 함수 포인터 외에 `block_size`와 `key_size`를 담고 있어, 알고리즘을 모르는 코드도 버퍼 크기를 알 수 있습니다. 키 사용이 끝나면 `clear(&ctx)`로 컨텍스트 전체(라운드 키 포함)를 0으로 지우며, `secure-zero.h`의 `secure_zero`를 써서 컴파일러 최적화로 제거되지 않습니다. `message_digest`는 `final`이 `secure_zero`로 컨텍스트 전체를 지운 뒤 `init`으로 초기화하므로 컴파일러 최적화로 제거되지 않으며, 별도 `clear` 함수가 없습니다.
 
 `message_digest`는 함수 포인터 외에 `digest_size`와 `block_size`를 담고 있어, 알고리즘을 모르는 코드(테스트, HMAC 등)도 버퍼 크기를 알 수 있습니다. `final`을 호출하면 컨텍스트가 초기화되므로 다시 쓰려면 `init`부터 시작합니다.
 
@@ -75,6 +75,7 @@ lsh256_message_digest.final(&ctx, out);
 ├── include/crypto-primitives/
 │   ├── cipher.h              # block_cipher 공통 인터페이스
 │   ├── message-digest.h      # message_digest 공통 인터페이스
+│   ├── secure-zero.h         # secure_zero 함수
 │   ├── template-cipher.h     # 템플릿 암호 헤더
 │   └── <name>.h              # 알고리즘별 헤더
 ├── src/

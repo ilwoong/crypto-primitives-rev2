@@ -47,7 +47,7 @@ README의 "코드 스타일"에 더해 다음을 지킨다.
 - 식별자 전부 snake_case (구조체 타입 포함). `BlockCipher` 같은 PascalCase 금지.
 - 인스턴스 이름: `<algo><keybits>_<variant>_block_cipher` (예: `aes128_lut1_block_cipher`). 키 길이가 하나면 `<algo>_block_cipher`. CHAM은 블록/키 둘 다 표기 (`cham64_128_block_cipher`).
 - `expand_key`가 키 길이를 받지 않으므로 키 길이마다 `block_cipher` 인스턴스를 따로 둔다. 컨텍스트와 encrypt/decrypt/clear는 공유.
-- 블록 암호는 `<algo>_clear(void *ctx)`로 컨텍스트 전체를 `secure_zero`(`cipher.h`)로 지우고 인스턴스의 `.clear`에 연결한다. 단위 테스트와 KAT가 NULL이면 실패시킨다.
+- 블록 암호는 `<algo>_clear(void *ctx)`로 컨텍스트 전체를 `secure_zero`(`secure-zero.h`)로 지우고 인스턴스의 `.clear`에 연결한다. 해시는 `final`이 출력 뒤 `secure_zero`로 지우고 `init`한다. 단위 테스트와 KAT가 NULL이면 실패시킨다.
 - 마스터 키 입력은 항상 `const uint8_t *`다. 라운드 키 타입은 알고리즘마다 통일할 필요 없이 구현에 맞는 타입(`uint8_t`, `uint16_t`, `uint32_t`, 2차원 배열 등)을 쓴다. 단, `uint8_t` 버퍼를 선언해 놓고 넓은 타입 포인터로 캐스트해 쓰지는 않는다. 워드로 쓸 거면 워드 배열로 선언한다.
 - 회전 함수 인자는 `unsigned rot`, for 루프는 `++i`.
 - 테이블은 원본에서 스크립트로 추출해 각 `src/<name>.c`에 `static const`로 인라인. 손으로 옮기지 않는다.
