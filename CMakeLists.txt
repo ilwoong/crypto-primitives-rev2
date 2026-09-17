@@ -50,3 +50,7 @@ add_executable(lea-kat-test tests/lea-kat-test.c)
 target_include_directories(lea-kat-test PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(lea-kat-test PRIVATE lea lea-unrolled)
 add_test(NAME lea-kat-test COMMAND lea-kat-test ${PROJECT_SOURCE_DIR}/tests/vectors/lea)
+
+add_executable(cham-kat-test tests/cham-kat-test.c)
+target_link_libraries(cham-kat-test PRIVATE cham)
+add_test(NAME cham-kat-test COMMAND cham-kat-test ${PROJECT_SOURCE_DIR}/tests/vectors/cham)
