@@ -47,7 +47,7 @@ static size_t hex_decode(uint8_t *out, const char *hex, size_t max_bytes)
     if (nbytes > max_bytes)
         nbytes = max_bytes;
 
-    for (size_t i = 0; i < nbytes; i++) {
+    for (size_t i = 0; i < nbytes; ++i) {
         int hi = hex_digit(hex[2 * i]);
         int lo = hex_digit(hex[2 * i + 1]);
         if (hi < 0 || lo < 0)
@@ -163,7 +163,7 @@ static int process_file(const char *filepath)
         }
 
         if (has_key && has_pt && has_ct) {
-            for (size_t v = 0; v < NUM_VARIANTS; v++)
+            for (size_t v = 0; v < NUM_VARIANTS; ++v)
                 failures += run_vector(&VARIANTS[v], mode, count, key, key_len, pt, ct);
             vectors++;
             has_key = has_pt = has_ct = 0;
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
     int total_failures = 0;
     printf("ARIA KAT (Known Answer Test)\n");
 
-    for (size_t i = 0; i < nfiles; i++) {
+    for (size_t i = 0; i < nfiles; ++i) {
         char path[512];
         snprintf(path, sizeof(path), "%s/%s", dir, files[i]);
         total_failures += process_file(path);

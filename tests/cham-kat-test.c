@@ -32,7 +32,7 @@ static size_t hex_decode(uint8_t *out, const char *hex, size_t max_bytes)
     if (nbytes > max_bytes)
         return 0;
 
-    for (size_t i = 0; i < nbytes; i++) {
+    for (size_t i = 0; i < nbytes; ++i) {
         int hi = hex_digit(hex[2 * i]);
         int lo = hex_digit(hex[2 * i + 1]);
         if (hi < 0 || lo < 0)
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
     int total_failures = 0;
     printf("CHAM KAT (Known Answer Test)\n");
 
-    for (size_t i = 0; i < nfiles; i++) {
+    for (size_t i = 0; i < nfiles; ++i) {
         char path[512];
         snprintf(path, sizeof(path), "%s/%s", dir, files[i]);
         total_failures += process_file(path);
