@@ -1,6 +1,6 @@
 # crypto-primitives
 
-C11로 작성한 블록 암호 구현 모음입니다. 모든 알고리즘은 `include/crypto-primitives/cipher.h`의 `block_cipher` 인터페이스(`expand_key`, `encrypt`, `decrypt`)를 구현하며, 알고리즘마다 소스 파일 하나로 되어 있어 외부 의존성 없이 빌드됩니다.
+C11로 작성한 블록 암호와 해시 함수 구현 모음입니다. 블록 암호는 `include/crypto-primitives/cipher.h`의 `block_cipher` 인터페이스(`expand_key`, `encrypt`, `decrypt`)를, 해시 함수는 `include/crypto-primitives/message-digest.h`의 `message_digest` 인터페이스(`init`, `update`, `final`)를 구현합니다. 알고리즘마다 소스 파일 하나로 되어 있어 외부 의존성 없이 빌드됩니다.
 
 `template-cipher`는 이 인터페이스를 보여주는 예제로, 키와 블록을 XOR만 하는 동작을 합니다. 실제 암호로 쓰면 안 됩니다.
 
@@ -25,6 +25,15 @@ C11로 작성한 블록 암호 구현 모음입니다. 모든 알고리즘은 `i
 
 같은 알고리즘의 변형(`aes`, `aes-lut1` 등)은 모두 동일한 출력을 내며 속도와 코드 크기만 다릅니다.
 
+## 구현된 해시 함수
+
+| 알고리즘 | 라이브러리 | 컨텍스트 | `message_digest` 인스턴스 | 다이제스트 / 블록 |
+|---|---|---|---|---|
+| LSH-256-256 | `lsh256` | `lsh256_ctx` | `lsh256_message_digest` | 32 / 128 바이트 |
+| LSH-512-512 | `lsh512` | `lsh512_ctx` | `lsh512_message_digest` | 64 / 256 바이트 |
+
+`message_digest`는 함수 포인터 외에 `digest_size`와 `block_size`를 담고 있어, 알고리즘을 모르는 코드(테스트, HMAC 등)도 버퍼 크기를 알 수 있습니다. `final`을 호출하면 컨텍스트가 초기화되므로 다시 쓰려면 `init`부터 시작합니다.
+
 ## 사용 예
 
 ```c
@@ -40,7 +49,20 @@ aes128_block_cipher.decrypt(&ctx, out, out);     // in-place 호출 가능
 
 컨텍스트는 호출자가 할당하며, 블록 크기는 알고리즘이 정합니다(CHAM-64, HIGHT는 8바이트, 나머지는 16바이트).
 
-모든 테스트는 little-endian 호스트(x86-64)에서 검증했습니다. AES, LEA, CHAM 구현은 입력 바이트를 호스트 바이트 순서의 워드로 읽으므로 big-endian 환경에서는 검증되지 않았습니다. HIGHT는 바이트 단위로만 동작하고, ARIA와 SEED는 바이트 순서를 명시적으로 처리하므로 호스트와 무관합니다.
+해시 함수도 같은 방식입니다. `update`는 임의 길이로 여러 번 나눠 호출할 수 있습니다.
+
+```c
+#include "crypto-primitives/lsh256.h"
+
+lsh256_ctx ctx;
+uint8_t out[32];                                  // lsh256_message_digest.digest_size
+
+lsh256_message_digest.init(&ctx);
+lsh256_message_digest.update(&ctx, data, len);
+lsh256_message_digest.final(&ctx, out);
+```
+
+모든 테스트는 little-endian 호스트(x86-64)에서 검증했습니다. AES, LEA, CHAM 구현은 입력 바이트를 호스트 바이트 순서의 워드로 읽으므로 big-endian 환경에서는 검증되지 않았습니다. HIGHT는 바이트 단위로만 동작하고, ARIA, SEED, LSH는 바이트 순서를 명시적으로 처리하므로 호스트와 무관합니다.
 
 ## 디렉터리 구조
 
@@ -49,6 +71,7 @@ aes128_block_cipher.decrypt(&ctx, out, out);     // in-place 호출 가능
 ├── CMakeLists.txt
 ├── include/crypto-primitives/
 │   ├── cipher.h              # block_cipher 공통 인터페이스
+│   ├── message-digest.h      # message_digest 공통 인터페이스
 │   ├── template-cipher.h     # 템플릿 암호 헤더
 │   └── <name>.h              # 알고리즘별 헤더
 ├── src/
@@ -88,7 +111,7 @@ ctest --test-dir build --output-on-failure
 테스트는 두 종류입니다.
 
 - `<name>-test`: 알고리즘 변형마다 하나씩 있으며, 표준 문서의 테스트 벡터로 암호화, 복호화, in-place 동작을 확인합니다.
-- `<algo>-kat-test`: `tests/vectors/<algo>/`의 `.rsp` 파일을 읽어 해당 알고리즘의 모든 변형을 검증합니다. 파일은 NIST CAVS 형식(`ECBVarKey*`, `ECBVarTxt*`)을 따르며, 각각 `[ENCRYPT]`와 `[DECRYPT]` 섹션이 있습니다.
+- `<algo>-kat-test`: `tests/vectors/<algo>/`의 `.rsp` 파일을 읽어 해당 알고리즘의 모든 변형을 검증합니다. 블록 암호 파일은 NIST CAVS 형식(`ECBVarKey*`, `ECBVarTxt*`)을 따르며 `[ENCRYPT]`와 `[DECRYPT]` 섹션이 있습니다. 해시 파일(`*ShortMsg.rsp`)은 NIST SHA 벡터 형식(`Len`, `Msg`, `MD`)이며, 0~512바이트의 모든 길이를 담고 있어 블록 경계 처리를 확인합니다. 해시 KAT는 메시지를 한 번에 넣는 경우와 잘게 나눠 넣는 경우를 모두 검사합니다.
 
 테스트 실행 파일을 직접 실행할 수도 있습니다. KAT 테스트는 벡터 디렉터리를 인자로 받습니다.
 
@@ -107,6 +130,7 @@ ctest --test-dir build --output-on-failure
 | HIGHT | KISA 테스트 벡터 | 원 저장소 구현으로 생성 |
 | ARIA | 원 저장소, RFC 5794 Appendix A.1 | 원 저장소 구현으로 생성 |
 | SEED | RFC 4269 Appendix B | 원 저장소 구현에 RFC 4269 키 스케줄을 적용해 생성 |
+| LSH | Crypto++ `TestVectors/lsh256.txt`, `lsh512.txt` | 원 저장소 구현으로 생성 |
 
 AES 외의 KAT 벡터는 원 저장소의 구현을 직접 링크해 생성했으며, 생성 전에 그 구현이 표준 문서의 벡터를 통과하는지 확인했습니다.
 
@@ -126,6 +150,8 @@ SEED는 원 저장소 구현의 키 스케줄이 RFC 4269와 달라(키가 전�
    ```
 
 그러면 라이브러리 `<name>`, 테스트 실행 파일 `<name>-test`가 만들어지고, 테스트가 CTest에 등록됩니다.
+
+해시 함수는 `message-digest.h`의 `message_digest`를 구현하고 `add_message_digest(<name>)`으로 등록합니다. 파일 규칙은 같습니다.
 
 KAT 테스트를 추가하려면 `tests/vectors/<algo>/`에 `.rsp` 파일을 넣고 `tests/<algo>-kat-test.c`를 작성한 뒤, 기존 KAT 테스트와 같은 방식으로 `CMakeLists.txt`에 실행 파일과 테스트를 등록합니다.
 
