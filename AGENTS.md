@@ -33,7 +33,21 @@ git diff HEAD                   # 추적 중인 파일의 변경 내용
 
 역할 지시문은 `docs/agents/<role>.md`에 도구 중립적으로 둔다. `.claude/agents/`는 그 문서를 가리키는 Claude Code용 래퍼(도구 제한, 모델 지정)다. 다른 도구용 래퍼를 만드는 방법은 `docs/agents/README.md`를 본다. Hermes의 `.hermes/agents/` 래퍼는 자동 검색·권한 강제·모델 선택에 쓰이지 않는 안내 문서다. Hermes 오케스트레이터는 `.hermes.md`, 이 파일, `README.md`, 역할 지시문을 직접 읽고 역할별 제약을 위임 목표에 명시한다.
 
-아래 순서로 에이전트를 호출한다. 각 에이전트에는 사용자 요청 원문과 직전 단계의 보고를 그대로 넘긴다. 서브에이전트 기능이 없는 도구에서는 같은 순서로 각 단계의 역할 문서를 읽고 그 역할로 단계를 수행한 뒤, 역할 문서의 "마무리 보고" 형식으로 결과를 남기고 다음 단계로 넘어간다. 이때도 reviewer 단계에서는 파일을 고치지 않는다. 역할 권한을 런타임이 강제하지 않는 도구에서는 reviewer·documenter 같은 제한 역할의 전후에 `git status --porcelain`, `git diff HEAD`, 신규 파일의 전체 내용을 비교한다. 허용 범위 밖의 변경이 있으면 그 단계는 실패로 처리하고 다음 단계로 넘기지 않는다.
+아래 순서로 에이전트를 호출한다. 각 에이전트에는 사용자 요청 원문과 직전 단계의 보고를 그대로 넘긴다. 서브에이전트 기능이 없는 도구에서는 같은 순서로 각 단계의 역할 문서를 읽고 그 역할로 단계를 수행한 뒤, 역할 문서의 "마무리 보고" 형식으로 결과를 남기고 다음 단계로 넘어간다. 이때도 reviewer 단계에서는 파일을 고치지 않는다. 역할 권한을 런타임이 전부 강제하지 못하는 도구에서는(Claude Code의 `tools:`도 파일 경로와 셸 명령 종류는 제한하지 못한다) reviewer·documenter 같은 제한 역할의 전후 상태를 아래 규칙으로 비교한다. 허용 범위 밖의 변경이 있으면 그 단계는 실패로 처리하고 다음 단계로 넘기지 않는다.
+
+```sh
+base=$(git rev-parse HEAD)      # 단계 전에 기록
+git status --porcelain          # 단계 전후 모두
+git diff "$base"                # 단계 전후 모두. HEAD가 아니라 기록한 OID 기준
+git rev-parse HEAD              # 단계 후. $base와 다르면 실패
+git symbolic-ref -q HEAD        # 단계 전후 모두. 브랜치가 바뀌었거나 detached면 실패
+git reflog show HEAD | wc -l    # 단계 전후 모두. 항목 수가 달라지면 실패
+git reflog show "$(git symbolic-ref -q HEAD)" | wc -l   # 현재 브랜치 reflog도 같은 식으로
+```
+
+역할 에이전트는 커밋하지 않는다(`commit`, `commit --amend`, `reset`, `checkout` 등 HEAD를 옮기는 명령 포함). 제한 역할이 파일을 바꾼 뒤 커밋하면 `git status --porcelain`과 `git diff HEAD`가 둘 다 비어 위반이 가려지므로, 단계 후 HEAD OID가 바뀌었으면 작업 트리가 깨끗해도 실패다. 같은 OID의 다른 브랜치로 옮기면 OID 비교로는 안 보이지만 이후 커밋이 엉뚱한 브랜치에 쌓이므로 `git symbolic-ref -q HEAD`도 전후를 비교한다. 커밋한 뒤 `git reset --hard "$base"`로 되돌아오면 HEAD, status, diff가 모두 원래대로이므로 HEAD와 현재 브랜치의 reflog 항목 수도 전후를 비교한다. HEAD를 옮기는 명령은 되돌려도 reflog 항목을 남긴다. 신규(`??`) 파일은 diff에 나오지 않으므로 전후의 전체 내용을 비교한다.
+
+이 비교는 단계가 끝난 시점의 순 변경을 잡는 탐지 수단이지 강제 수단이 아니다. 실수나 지시 위반으로 남은 변경을 다음 단계로 넘기지 않는 것이 목적이다. 셸 권한으로 의도적으로 우회하는 경우(`git reflog expire`, `.git/` 직접 수정, 저장소 밖 쓰기 등)는 대상이 아니며, 그것까지 막으려면 도구의 샌드박스·명령 차단 설정으로 막는다.
 
 1. **coder** — 요청된 변경 구현
 2. **formatter** — 바뀐 파일에 clang-format 적용

@@ -130,7 +130,7 @@ GitHub Actions(`.github/workflows/ci.yml`)가 `main`으로의 push와 모든 PR�
 
 Hermes에서는 `.hermes.md`를 먼저 읽으므로 오케스트레이터가 `AGENTS.md`, 이 README, 그리고 각 `docs/agents/<role>.md`도 직접 읽습니다. `.hermes/agents/`의 역할 래퍼는 역할 설명과 위임 시 유의점을 담는 안내 문서이며 Hermes가 자동 검색하거나 `tools:`·`model_hint:`를 강제하지 않습니다.
 
-`delegate_task`로 실행할 때 오케스트레이터는 역할별 쓰기 범위와 마무리 보고 형식을 위임 목표에 명시하고, reviewer와 documenter 같은 제한 역할 전후에는 `git status --porcelain`, `git diff HEAD`, 신규 파일 전체 내용을 비교합니다. 역할별 모델 선택이 필요하면 별도 Hermes 프로세스를 `hermes chat --oneshot -m <model> --in <repo>`로 실행합니다. 세부 순서와 재검증 루프는 `AGENTS.md`의 "에이전트 파이프라인"을 따릅니다.
+`delegate_task`로 실행할 때 오케스트레이터는 역할별 쓰기 범위와 마무리 보고 형식을 위임 목표에 명시하고, reviewer와 documenter 같은 제한 역할 전후에는 `AGENTS.md`의 상태 비교 규칙대로 HEAD OID, 브랜치(`git symbolic-ref -q HEAD`), reflog 항목 수, `git status --porcelain`, 기록한 OID 기준 `git diff`, 신규 파일 전체 내용을 비교합니다(단계 후 HEAD·브랜치·reflog가 바뀌었으면 실패). 역할별 모델 선택이 필요하면 별도 Hermes 프로세스를 `hermes chat --oneshot -m <model> --in <repo>`로 실행합니다. 세부 순서와 재검증 루프는 `AGENTS.md`의 "에이전트 파이프라인"을 따릅니다.
 
 테스트 실행 파일을 직접 실행할 수도 있습니다. KAT 테스트는 벡터 디렉터리를 인자로 받습니다.
 

@@ -9,15 +9,15 @@
 | reviewer | **없음** | 읽기 명령만 | 상 (오케스트레이터와 같은 모델) |
 | tester | `tests/`만 | 전체 | 중 |
 | fixer | 기존 파일 수정만 | 전체 | 중 |
-| documenter | `README.md`, 헤더 주석 | 읽기 명령만 | 하 |
+| documenter | `README.md`만 | 읽기 명령만 | 하 |
 
 ## 도구별 래퍼
 
 래퍼에는 그 도구만의 설정(도구 제한, 모델, 샌드박스)과 "`docs/agents/<role>.md`를 읽고 따른다"는 한 줄만 둔다.
 
-- **Claude Code**: `.claude/agents/<role>.md`. frontmatter의 `tools:`가 위 표의 권한을, `model:`이 모델 등급을 강제한다.
-- **Hermes**: `.hermes/agents/<role>.md`는 자동 검색되는 에이전트 정의가 아니라 오케스트레이터용 안내 래퍼다. `delegate_task`는 래퍼의 `tools:`나 `model_hint:`를 적용하지 않는다. 오케스트레이터가 역할 문서의 권한·마무리 보고 형식을 목표/컨텍스트에 명시하고, 제한 역할 전후에 `git status --porcelain`, `git diff HEAD`, 신규 파일 전체 내용을 비교해 허용되지 않은 변경을 실패로 처리한다. 역할별 모델이 필요하면 별도 Hermes 프로세스를 실행한다.
-- **다른 도구**: 그 도구의 서브에이전트/규칙 파일 형식에 맞춰 같은 식으로 만든다. 권한을 강제할 수단이 없으면 위 표는 역할 문서 첫머리의 "권한" 줄로만 지켜지므로, reviewer가 파일을 고치지 않았는지 `git status --porcelain`으로 단계 전후를 비교한다.
+- **Claude Code**: `.claude/agents/<role>.md`. frontmatter의 `model:`이 모델 등급을 강제하고, `tools:`는 도구 종류 단위로만 강제한다(reviewer에는 파일 편집 도구가 없고, fixer에는 새 파일 쓰기 도구가 없다). 파일 경로(`tests/`만, `README.md`만)와 셸 명령 종류(읽기 명령만, `clang-format`/`git`만)는 `tools:`로 제한되지 않는다. 셸이 있는 역할은 셸로 파일을 바꿀 수도 있다. 이 부분은 역할 문서의 "권한" 줄로만 지켜지므로, `AGENTS.md`대로 reviewer·documenter 같은 제한 역할 전후의 상태를 비교해 검증한다.
+- **Hermes**: `.hermes/agents/<role>.md`는 자동 검색되는 에이전트 정의가 아니라 오케스트레이터용 안내 래퍼다. `delegate_task`는 래퍼의 `tools:`나 `model_hint:`를 적용하지 않는다. 오케스트레이터가 역할 문서의 권한·마무리 보고 형식을 목표/컨텍스트에 명시하고, 제한 역할 전후에 `AGENTS.md`의 상태 비교 규칙(HEAD OID·브랜치·reflog 항목 수 기록, `git status --porcelain`, 기록한 OID 기준 `git diff`, 신규 파일 전체 내용)으로 허용되지 않은 변경과 커밋을 실패로 처리한다. 역할별 모델이 필요하면 별도 Hermes 프로세스를 실행한다.
+- **다른 도구**: 그 도구의 서브에이전트/규칙 파일 형식에 맞춰 같은 식으로 만든다. 권한을 강제할 수단이 없으면 위 표는 역할 문서 첫머리의 "권한" 줄로만 지켜지므로, reviewer가 파일을 고치거나 커밋하지 않았는지 `AGENTS.md`의 상태 비교 규칙으로 단계 전후를 비교한다.
 - **서브에이전트가 없는 도구**: `AGENTS.md`의 대체 규칙대로 한 세션에서 역할 문서를 순서대로 읽고 수행한다.
 
 ## 새 역할 문서를 쓸 때
