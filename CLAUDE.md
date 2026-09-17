@@ -14,6 +14,8 @@ clang-format --dry-run --Werror src/*.c include/crypto-primitives/*.h tests/*.c 
 
 `build/`는 gitignore 대상이므로 sanitizer 빌드도 `build/sanitize`처럼 그 안에 둔다.
 
+`.github/workflows/ci.yml`이 위 네 검사를 gcc/clang × 일반/sanitizer 매트릭스로 `-Werror`를 붙여 돌린다. 로컬에서는 경고로만 보이는 것이 CI에서는 실패이므로 tester는 경고 0을 기준으로 삼는다.
+
 ## 변경 범위를 정하는 방법
 
 모든 에이전트는 "이번 파이프라인에서 바뀐 파일"을 다음으로 정한다. `git diff`만 보면 새로 만든 파일이 빠지므로 반드시 둘 다 본다.
