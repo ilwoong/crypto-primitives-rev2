@@ -32,6 +32,11 @@ function(add_cipher name)
     add_test(NAME ${name}-test COMMAND ${name}-test)
 endfunction()
 
+# 해시 함수 추가: add_message_digest(<name>) — add_cipher와 같은 파일 규칙을 따름
+function(add_message_digest name)
+    add_cipher(${name})
+endfunction()
+
 add_cipher(template-cipher)
 add_cipher(aes)
 add_cipher(aes-lut1)
@@ -45,6 +50,9 @@ add_cipher(hight-lut)
 add_cipher(aria)
 add_cipher(aria-lut)
 add_cipher(seed)
+
+add_message_digest(lsh256)
+add_message_digest(lsh512)
 
 add_executable(aes-kat-test tests/aes-kat-test.c)
 target_include_directories(aes-kat-test PRIVATE ${PROJECT_SOURCE_DIR}/include)
