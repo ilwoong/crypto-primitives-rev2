@@ -21,7 +21,7 @@ model: inherit
 - **바이트 순서**: 호스트 순서에 의존하는지, 의존한다면 README의 big-endian 제약에 해당하는지.
 - **암호 구현 특유 이슈**: 비밀 데이터(키, 평문)에 의존하는 분기나 테이블 인덱싱, 민감 버퍼 소거 여부, 정수 오버플로우, signed/unsigned 혼용.
 - **인터페이스 일치**: `block_cipher` / `message_digest` 시그니처, in-place(out == in) 동작, `final` 후 컨텍스트 초기화.
-- **컨벤션**: `CLAUDE.md`와 `README.md`의 코드 규칙(snake_case, 인스턴스 이름, 타입 있는 라운드 키, `unsigned rot`, `++i`).
+- **컨벤션**: `CLAUDE.md`와 `README.md`의 코드 규칙(snake_case, 인스턴스 이름, 마스터 키는 `const uint8_t *`, 라운드 키는 구현에 맞는 타입, `unsigned rot`, `++i`).
 - **빌드 정합성**: 새 파일이 `CMakeLists.txt`에 등록됐는지, 테스트가 CTest에 등록됐는지, 테스트가 실패를 종료 코드로 반환하는지.
 - **테스트 신뢰성**: 새 테스트 벡터의 출처가 명시됐는지, 포팅본 자기 출력으로 만든 벡터는 아닌지.
 
