@@ -5,13 +5,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#define BLOCK_SIZE 16
+#define MAX_BLOCK_SIZE 16
 
 typedef struct {
     const char *name;
     uint8_t key[32];
-    uint8_t plaintext[BLOCK_SIZE];
-    uint8_t ciphertext[BLOCK_SIZE];
+    uint8_t plaintext[MAX_BLOCK_SIZE];
+    uint8_t ciphertext[MAX_BLOCK_SIZE];
 } test_vector;
 
 static const test_vector TV_ARIA128 = {
@@ -59,46 +59,52 @@ static const test_vector TV_RFC5794_ARIA256 = {
     .ciphertext = {0xf9, 0x2b, 0xd7, 0xc7, 0x9f, 0xb7, 0x2e, 0x2f, 0x2b, 0x8f, 0x80, 0xc1, 0x97, 0x2d, 0x24, 0xfc},
 };
 
-static void print_block(const char *label, const uint8_t *block)
+static void print_block(const char *label, const uint8_t *block, size_t size)
 {
     printf("    %-8s: ", label);
-    for (size_t i = 0; i < BLOCK_SIZE; ++i) {
+    for (size_t i = 0; i < size; ++i) {
         printf("%02x", block[i]);
     }
     printf("\n");
 }
 
-static int check_block(const char *test_name, const char *what, const uint8_t *actual, const uint8_t *expected)
+static int check_block(const char *test_name, const char *what, const uint8_t *actual, const uint8_t *expected,
+                       size_t size)
 {
-    if (memcmp(actual, expected, BLOCK_SIZE) == 0) {
+    if (memcmp(actual, expected, size) == 0) {
         return 0;
     }
     printf("[FAIL] %s: %s mismatch\n", test_name, what);
-    print_block("expected", expected);
-    print_block("actual", actual);
+    print_block("expected", expected, size);
+    print_block("actual", actual, size);
     return 1;
 }
 
 static int run_test_vector(const block_cipher *cipher, const test_vector *tv)
 {
     aria_ctx ctx;
-    uint8_t buf[BLOCK_SIZE];
+    uint8_t buf[MAX_BLOCK_SIZE];
     int failures = 0;
+
+    if (cipher->block_size > MAX_BLOCK_SIZE) {
+        printf("[FAIL] %s: block_size %zu exceeds buffer %d\n", tv->name, cipher->block_size, MAX_BLOCK_SIZE);
+        return 1;
+    }
 
     cipher->expand_key(&ctx, tv->key);
 
     cipher->encrypt(&ctx, buf, tv->plaintext);
-    failures += check_block(tv->name, "encrypt", buf, tv->ciphertext);
+    failures += check_block(tv->name, "encrypt", buf, tv->ciphertext, cipher->block_size);
 
     cipher->decrypt(&ctx, buf, tv->ciphertext);
-    failures += check_block(tv->name, "decrypt", buf, tv->plaintext);
+    failures += check_block(tv->name, "decrypt", buf, tv->plaintext, cipher->block_size);
 
-    memcpy(buf, tv->plaintext, BLOCK_SIZE);
+    memcpy(buf, tv->plaintext, cipher->block_size);
     cipher->encrypt(&ctx, buf, buf);
-    failures += check_block(tv->name, "in-place encrypt", buf, tv->ciphertext);
+    failures += check_block(tv->name, "in-place encrypt", buf, tv->ciphertext, cipher->block_size);
 
     cipher->decrypt(&ctx, buf, buf);
-    failures += check_block(tv->name, "in-place decrypt", buf, tv->plaintext);
+    failures += check_block(tv->name, "in-place decrypt", buf, tv->plaintext, cipher->block_size);
 
     if (failures == 0) {
         printf("[PASS] %s\n", tv->name);
