@@ -6,8 +6,8 @@ static hight_ctx ctx_hight;
 static hight_lut_ctx ctx_hight_lut;
 
 static const kat_block_cipher_entry ENTRIES[] = {
-    {"hight", &hight_block_cipher, 16, 8, &ctx_hight},
-    {"hight-lut", &hight_lut_block_cipher, 16, 8, &ctx_hight_lut},
+    {"hight", &hight_block_cipher, &ctx_hight},
+    {"hight-lut", &hight_lut_block_cipher, &ctx_hight_lut},
 };
 
 static const char *const FILES[] = {

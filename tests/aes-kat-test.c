@@ -10,18 +10,18 @@ static aes_lut2_ctx ctx_aes_lut2;
 static aes_lut3_ctx ctx_aes_lut3;
 
 static const kat_block_cipher_entry ENTRIES[] = {
-    {"aes", &aes128_block_cipher, 16, 16, &ctx_aes},
-    {"aes", &aes192_block_cipher, 24, 16, &ctx_aes},
-    {"aes", &aes256_block_cipher, 32, 16, &ctx_aes},
-    {"aes-lut1", &aes128_lut1_block_cipher, 16, 16, &ctx_aes_lut1},
-    {"aes-lut1", &aes192_lut1_block_cipher, 24, 16, &ctx_aes_lut1},
-    {"aes-lut1", &aes256_lut1_block_cipher, 32, 16, &ctx_aes_lut1},
-    {"aes-lut2", &aes128_lut2_block_cipher, 16, 16, &ctx_aes_lut2},
-    {"aes-lut2", &aes192_lut2_block_cipher, 24, 16, &ctx_aes_lut2},
-    {"aes-lut2", &aes256_lut2_block_cipher, 32, 16, &ctx_aes_lut2},
-    {"aes-lut3", &aes128_lut3_block_cipher, 16, 16, &ctx_aes_lut3},
-    {"aes-lut3", &aes192_lut3_block_cipher, 24, 16, &ctx_aes_lut3},
-    {"aes-lut3", &aes256_lut3_block_cipher, 32, 16, &ctx_aes_lut3},
+    {"aes", &aes128_block_cipher, &ctx_aes},
+    {"aes", &aes192_block_cipher, &ctx_aes},
+    {"aes", &aes256_block_cipher, &ctx_aes},
+    {"aes-lut1", &aes128_lut1_block_cipher, &ctx_aes_lut1},
+    {"aes-lut1", &aes192_lut1_block_cipher, &ctx_aes_lut1},
+    {"aes-lut1", &aes256_lut1_block_cipher, &ctx_aes_lut1},
+    {"aes-lut2", &aes128_lut2_block_cipher, &ctx_aes_lut2},
+    {"aes-lut2", &aes192_lut2_block_cipher, &ctx_aes_lut2},
+    {"aes-lut2", &aes256_lut2_block_cipher, &ctx_aes_lut2},
+    {"aes-lut3", &aes128_lut3_block_cipher, &ctx_aes_lut3},
+    {"aes-lut3", &aes192_lut3_block_cipher, &ctx_aes_lut3},
+    {"aes-lut3", &aes256_lut3_block_cipher, &ctx_aes_lut3},
 };
 
 static const char *const FILES[] = {

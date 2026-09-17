@@ -6,12 +6,12 @@ static lea_ctx ctx_lea;
 static lea_unrolled_ctx ctx_lea_unrolled;
 
 static const kat_block_cipher_entry ENTRIES[] = {
-    {"lea", &lea128_block_cipher, 16, 16, &ctx_lea},
-    {"lea", &lea192_block_cipher, 24, 16, &ctx_lea},
-    {"lea", &lea256_block_cipher, 32, 16, &ctx_lea},
-    {"lea-unrolled", &lea128_unrolled_block_cipher, 16, 16, &ctx_lea_unrolled},
-    {"lea-unrolled", &lea192_unrolled_block_cipher, 24, 16, &ctx_lea_unrolled},
-    {"lea-unrolled", &lea256_unrolled_block_cipher, 32, 16, &ctx_lea_unrolled},
+    {"lea", &lea128_block_cipher, &ctx_lea},
+    {"lea", &lea192_block_cipher, &ctx_lea},
+    {"lea", &lea256_block_cipher, &ctx_lea},
+    {"lea-unrolled", &lea128_unrolled_block_cipher, &ctx_lea_unrolled},
+    {"lea-unrolled", &lea192_unrolled_block_cipher, &ctx_lea_unrolled},
+    {"lea-unrolled", &lea256_unrolled_block_cipher, &ctx_lea_unrolled},
 };
 
 static const char *const FILES[] = {

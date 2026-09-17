@@ -6,10 +6,11 @@
 #include <string.h>
 
 #define BLOCK_SIZE 16
+#define KEY_SIZE 16
 
 typedef struct {
     const char *name;
-    uint8_t key[BLOCK_SIZE];
+    uint8_t key[KEY_SIZE];
     uint8_t plaintext[BLOCK_SIZE];
     uint8_t ciphertext[BLOCK_SIZE];
 } test_vector;
@@ -55,6 +56,24 @@ static int check_block(const char *test_name, const char *what, const uint8_t *a
     return 1;
 }
 
+static int check_sizes(const block_cipher *cipher)
+{
+    int failures = 0;
+
+    if (cipher->block_size != BLOCK_SIZE) {
+        printf("[FAIL] block_size: expected %d, got %zu\n", BLOCK_SIZE, cipher->block_size);
+        failures++;
+    }
+    if (cipher->key_size != KEY_SIZE) {
+        printf("[FAIL] key_size: expected %d, got %zu\n", KEY_SIZE, cipher->key_size);
+        failures++;
+    }
+    if (failures == 0) {
+        printf("[PASS] size fields\n");
+    }
+    return failures;
+}
+
 static int run_test_vector(const block_cipher *cipher, const test_vector *tv)
 {
     template_cipher_ctx ctx;
@@ -87,6 +106,8 @@ int main(void)
 {
     const size_t num_vectors = sizeof(TEST_VECTORS) / sizeof(TEST_VECTORS[0]);
     int failures = 0;
+
+    failures += check_sizes(&template_block_cipher);
 
     for (size_t i = 0; i < num_vectors; ++i) {
         failures += run_test_vector(&template_block_cipher, &TEST_VECTORS[i]);

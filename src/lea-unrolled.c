@@ -184,9 +184,24 @@ void lea_unrolled_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     memcpy(out + 12, &b3, 4);
 }
 
-const block_cipher lea128_unrolled_block_cipher = {lea128_unrolled_expand_key, lea_unrolled_encrypt,
-                                                   lea_unrolled_decrypt};
-const block_cipher lea192_unrolled_block_cipher = {lea192_unrolled_expand_key, lea_unrolled_encrypt,
-                                                   lea_unrolled_decrypt};
-const block_cipher lea256_unrolled_block_cipher = {lea256_unrolled_expand_key, lea_unrolled_encrypt,
-                                                   lea_unrolled_decrypt};
+const block_cipher lea128_unrolled_block_cipher = {
+    .block_size = 16,
+    .key_size = 16,
+    .expand_key = lea128_unrolled_expand_key,
+    .encrypt = lea_unrolled_encrypt,
+    .decrypt = lea_unrolled_decrypt,
+};
+const block_cipher lea192_unrolled_block_cipher = {
+    .block_size = 16,
+    .key_size = 24,
+    .expand_key = lea192_unrolled_expand_key,
+    .encrypt = lea_unrolled_encrypt,
+    .decrypt = lea_unrolled_decrypt,
+};
+const block_cipher lea256_unrolled_block_cipher = {
+    .block_size = 16,
+    .key_size = 32,
+    .expand_key = lea256_unrolled_expand_key,
+    .encrypt = lea_unrolled_encrypt,
+    .decrypt = lea_unrolled_decrypt,
+};

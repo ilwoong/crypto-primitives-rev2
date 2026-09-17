@@ -1,6 +1,6 @@
 # crypto-primitives
 
-C11로 작성한 블록 암호와 해시 함수 구현 모음입니다. 블록 암호는 `include/crypto-primitives/cipher.h`의 `block_cipher` 인터페이스(`expand_key`, `encrypt`, `decrypt`)를, 해시 함수는 `include/crypto-primitives/message-digest.h`의 `message_digest` 인터페이스(`init`, `update`, `final`)를 구현합니다. 알고리즘마다 소스 파일 하나로 되어 있어 외부 의존성 없이 빌드됩니다.
+C11로 작성한 블록 암호와 해시 함수 구현 모음입니다. 블록 암호는 `include/crypto-primitives/cipher.h`의 `block_cipher` 인터페이스(`expand_key`, `encrypt`, `decrypt`)를, 해시 함수는 `include/crypto-primitives/message-digest.h`의 `message_digest` 인터페이스(`init`, `update`, `final`)를 구현합니다. `block_cipher`와 `message_digest`는 함수 포인터 외에 크기 정보도 담고 있습니다. 알고리즘마다 소스 파일 하나로 되어 있어 외부 의존성 없이 빌드됩니다.
 
 `template-cipher`는 이 인터페이스를 보여주는 예제로, 키와 블록을 XOR만 하는 동작을 합니다. 실제 암호로 쓰면 안 됩니다.
 
@@ -32,6 +32,8 @@ C11로 작성한 블록 암호와 해시 함수 구현 모음입니다. 블록 �
 | LSH-256-256 | `lsh256` | `lsh256_ctx` | `lsh256_message_digest` | 32 / 128 바이트 |
 | LSH-512-512 | `lsh512` | `lsh512_ctx` | `lsh512_message_digest` | 64 / 256 바이트 |
 
+`block_cipher`는 함수 포인터 외에 `block_size`와 `key_size`를 담고 있어, 알고리즘을 모르는 코드도 버퍼 크기를 알 수 있습니다.
+
 `message_digest`는 함수 포인터 외에 `digest_size`와 `block_size`를 담고 있어, 알고리즘을 모르는 코드(테스트, HMAC 등)도 버퍼 크기를 알 수 있습니다. `final`을 호출하면 컨텍스트가 초기화되므로 다시 쓰려면 `init`부터 시작합니다.
 
 ## 사용 예
@@ -42,12 +44,12 @@ C11로 작성한 블록 암호와 해시 함수 구현 모음입니다. 블록 �
 aes_ctx ctx;
 uint8_t out[16];
 
-aes128_block_cipher.expand_key(&ctx, key);       // key: 16바이트
-aes128_block_cipher.encrypt(&ctx, out, in);      // in, out: 16바이트 블록
+aes128_block_cipher.expand_key(&ctx, key);       // key: aes128_block_cipher.key_size 바이트
+aes128_block_cipher.encrypt(&ctx, out, in);      // in, out: aes128_block_cipher.block_size 바이트
 aes128_block_cipher.decrypt(&ctx, out, out);     // in-place 호출 가능
 ```
 
-컨텍스트는 호출자가 할당하며, 블록 크기는 알고리즘이 정합니다(CHAM-64, HIGHT는 8바이트, 나머지는 16바이트).
+컨텍스트는 호출자가 할당합니다. 블록 크기와 키 크기는 `block_cipher` 인스턴스의 `block_size`, `key_size` 필드에서 확인할 수 있습니다.
 
 해시 함수도 같은 방식입니다. `update`는 임의 길이로 여러 번 나눠 호출할 수 있습니다.
 
@@ -143,7 +145,7 @@ SEED는 원 저장소 구현의 키 스케줄이 RFC 4269와 달라(키가 전�
 `<name>`이 알고리즘 이름일 때:
 
 1. `include/crypto-primitives/<name>.h`에 컨텍스트 구조체와 함수, `extern const block_cipher` 선언을 추가합니다.
-2. `src/<name>.c`에 구현을 작성합니다. 테이블 등 필요한 것은 모두 이 파일 안에 `static`으로 둡니다.
+2. `src/<name>.c`에 구현을 작성합니다. `block_cipher` 인스턴스는 지정 초기화로 작성하고, `block_size`와 `key_size` 필드를 바이트 단위로 채웁니다. 테이블 등 필요한 것은 모두 이 파일 안에 `static`으로 둡니다.
 3. `tests/<name>-test.c`에 테스트 벡터 기반 테스트를 작성합니다.
 4. `CMakeLists.txt`에 한 줄을 추가합니다.
 
@@ -155,7 +157,7 @@ SEED는 원 저장소 구현의 키 스케줄이 RFC 4269와 달라(키가 전�
 
 해시 함수는 `message-digest.h`의 `message_digest`를 구현하고 `add_message_digest(<name>)`으로 등록합니다. 파일 규칙은 같습니다.
 
-KAT 테스트를 추가하려면 `tests/vectors/<algo>/`에 `.rsp` 파일을 넣고 `tests/<algo>-kat-test.c`를 작성합니다. 테스트 파일은 `kat-common.h`를 include하고, 컨텍스트 변수들과 `kat_block_cipher_entry`(또는 `kat_message_digest_entry`) 배열 `ENTRIES[]`, 벡터 파일명 배열 `FILES[]`를 정의한 뒤, `main`에서 `kat_block_cipher_main()` 또는 `kat_message_digest_main()`을 호출합니다. 그 후 `CMakeLists.txt`에 한 줄을 추가합니다.
+KAT 테스트를 추가하려면 `tests/vectors/<algo>/`에 `.rsp` 파일을 넣고 `tests/<algo>-kat-test.c`를 작성합니다. 테스트 파일은 `kat-common.h`를 include하고, 컨텍스트 변수들과 `kat_block_cipher_entry`(또는 `kat_message_digest_entry`) 배열 `ENTRIES[]`, 벡터 파일명 배열 `FILES[]`를 정의한 뒤, `main`에서 `kat_block_cipher_main()` 또는 `kat_message_digest_main()`을 호출합니다. `kat_block_cipher_entry`는 `{name, cipher 인스턴스, ctx}` 3필드이며, 크기는 인스턴스의 `block_size`와 `key_size`에서 읽습니다. 그 후 `CMakeLists.txt`에 한 줄을 추가합니다.
 
 ```cmake
 add_kat_test(<algo> <vectors-subdir> <lib>...)

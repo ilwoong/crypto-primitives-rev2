@@ -4,7 +4,7 @@
 static seed_ctx ctx_seed;
 
 static const kat_block_cipher_entry ENTRIES[] = {
-    {"seed", &seed_block_cipher, 16, 16, &ctx_seed},
+    {"seed", &seed_block_cipher, &ctx_seed},
 };
 
 static const char *const FILES[] = {

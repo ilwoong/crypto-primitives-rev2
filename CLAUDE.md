@@ -70,4 +70,4 @@ README의 "코드 스타일"에 더해 다음을 지킨다.
 - big-endian 미검증: AES, LEA, CHAM은 워드를 호스트 바이트 순서로 읽는다.
 - SIMD 변형(`aes.ni.c`, `lea.avx2.c`, `lsh*.sse4.c`, `lsh*.avx2.c`)은 x86 전용이라 의도적으로 제외했다. 추가한다면 CMake에서 컴파일러 플래그를 감지해 선택적으로 빌드한다.
 - 원본의 `tools/hex.c`, `*/print_tables.c`, `seed_tool.c`는 유틸리티/테이블 생성기라 포팅하지 않는다.
-- 운용 모드(ECB, CTR)는 미포팅. `block_cipher`에 블록 크기 정보가 없어 설계 결정이 먼저 필요하다. 사용자에게 제안한 뒤 진행한다.
+- 운용 모드(ECB, CTR)는 미포팅. `block_cipher`의 `block_size`, `key_size`로 크기는 알 수 있으나, 모드 인터페이스(컨텍스트, IV/카운터 소유권, 파일 배치)는 설계 결정이 먼저 필요하다. 사용자에게 제안한 뒤 진행한다.

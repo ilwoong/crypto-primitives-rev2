@@ -437,18 +437,24 @@ static inline void decrypt_last_round(uint8_t *block, const uint8_t *rk)
 }
 
 const block_cipher aes128_lut3_block_cipher = {
+    .block_size = 16,
+    .key_size = 16,
     .expand_key = aes128_lut3_expand_key,
     .encrypt = aes_lut3_encrypt,
     .decrypt = aes_lut3_decrypt,
 };
 
 const block_cipher aes192_lut3_block_cipher = {
+    .block_size = 16,
+    .key_size = 24,
     .expand_key = aes192_lut3_expand_key,
     .encrypt = aes_lut3_encrypt,
     .decrypt = aes_lut3_decrypt,
 };
 
 const block_cipher aes256_lut3_block_cipher = {
+    .block_size = 16,
+    .key_size = 32,
     .expand_key = aes256_lut3_expand_key,
     .encrypt = aes_lut3_encrypt,
     .decrypt = aes_lut3_decrypt,

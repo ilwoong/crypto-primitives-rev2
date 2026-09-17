@@ -6,12 +6,12 @@ static aria_ctx ctx_aria;
 static aria_lut_ctx ctx_aria_lut;
 
 static const kat_block_cipher_entry ENTRIES[] = {
-    {"aria", &aria128_block_cipher, 16, 16, &ctx_aria},
-    {"aria", &aria192_block_cipher, 24, 16, &ctx_aria},
-    {"aria", &aria256_block_cipher, 32, 16, &ctx_aria},
-    {"aria-lut", &aria128_lut_block_cipher, 16, 16, &ctx_aria_lut},
-    {"aria-lut", &aria192_lut_block_cipher, 24, 16, &ctx_aria_lut},
-    {"aria-lut", &aria256_lut_block_cipher, 32, 16, &ctx_aria_lut},
+    {"aria", &aria128_block_cipher, &ctx_aria},
+    {"aria", &aria192_block_cipher, &ctx_aria},
+    {"aria", &aria256_block_cipher, &ctx_aria},
+    {"aria-lut", &aria128_lut_block_cipher, &ctx_aria_lut},
+    {"aria-lut", &aria192_lut_block_cipher, &ctx_aria_lut},
+    {"aria-lut", &aria256_lut_block_cipher, &ctx_aria_lut},
 };
 
 static const char *const FILES[] = {

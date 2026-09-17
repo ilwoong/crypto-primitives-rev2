@@ -99,7 +99,7 @@ static int run_block_cipher_vector(const kat_block_cipher_entry *entries, size_t
 
     for (size_t i = 0; i < nentries; ++i) {
         const kat_block_cipher_entry *entry = &entries[i];
-        if (entry->key_size != key_len || entry->block_size != block_len)
+        if (entry->cipher->key_size != key_len || entry->cipher->block_size != block_len)
             continue;
         ++nmatched;
 

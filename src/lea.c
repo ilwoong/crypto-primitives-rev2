@@ -149,6 +149,24 @@ void lea_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     memcpy(out, b, 16);
 }
 
-const block_cipher lea128_block_cipher = {lea128_expand_key, lea_encrypt, lea_decrypt};
-const block_cipher lea192_block_cipher = {lea192_expand_key, lea_encrypt, lea_decrypt};
-const block_cipher lea256_block_cipher = {lea256_expand_key, lea_encrypt, lea_decrypt};
+const block_cipher lea128_block_cipher = {
+    .block_size = 16,
+    .key_size = 16,
+    .expand_key = lea128_expand_key,
+    .encrypt = lea_encrypt,
+    .decrypt = lea_decrypt,
+};
+const block_cipher lea192_block_cipher = {
+    .block_size = 16,
+    .key_size = 24,
+    .expand_key = lea192_expand_key,
+    .encrypt = lea_encrypt,
+    .decrypt = lea_decrypt,
+};
+const block_cipher lea256_block_cipher = {
+    .block_size = 16,
+    .key_size = 32,
+    .expand_key = lea256_expand_key,
+    .encrypt = lea_encrypt,
+    .decrypt = lea_decrypt,
+};

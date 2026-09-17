@@ -16,8 +16,6 @@
 typedef struct {
     const char *name;
     const block_cipher *cipher;
-    size_t key_size;
-    size_t block_size;
     void *ctx;
 } kat_block_cipher_entry;
 
