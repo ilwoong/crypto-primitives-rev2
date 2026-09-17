@@ -7,7 +7,7 @@ typedef struct {
     uint8_t round_keys[16];
 } template_cipher_ctx;
 
-extern const BlockCipher TemplateBlockCipher;
+extern const block_cipher template_block_cipher;
 
 void template_expand_key(void *ctx, const uint8_t *master_key);
 void template_encrypt(void *ctx, uint8_t *out, const uint8_t *in);

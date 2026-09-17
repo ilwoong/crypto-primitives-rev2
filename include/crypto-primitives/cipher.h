@@ -10,6 +10,6 @@ typedef struct {
     expand_key_fn expand_key;
     crypt_block_fn encrypt;
     crypt_block_fn decrypt;
-} BlockCipher;
+} block_cipher;
 
 #endif

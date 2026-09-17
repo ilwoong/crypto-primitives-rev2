@@ -55,7 +55,7 @@ static int check_block(const char *test_name, const char *what, const uint8_t *a
     return 1;
 }
 
-static int run_test_vector(const BlockCipher *cipher, const test_vector *tv)
+static int run_test_vector(const block_cipher *cipher, const test_vector *tv)
 {
     template_cipher_ctx ctx;
     uint8_t buf[BLOCK_SIZE];
@@ -89,7 +89,7 @@ int main(void)
     int failures = 0;
 
     for (size_t i = 0; i < num_vectors; ++i) {
-        failures += run_test_vector(&TemplateBlockCipher, &TEST_VECTORS[i]);
+        failures += run_test_vector(&template_block_cipher, &TEST_VECTORS[i]);
     }
 
     printf("%d failure(s)\n", failures);
