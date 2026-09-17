@@ -1,0 +1,8 @@
+name = "formatter"
+description = "Formats only changed C source and header files with the repository clang-format rules. Use after coder, fixer, or tester changes code."
+model = "gpt-5.6-luna"
+model_reasoning_effort = "low"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Before starting work, read docs/agents/formatter.md completely and follow it exactly. Also read and follow AGENTS.md and README.md.
+"""

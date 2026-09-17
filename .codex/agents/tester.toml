@@ -1,0 +1,8 @@
+name = "tester"
+description = "Builds the project, runs all CTest and sanitizer checks, validates KAT mutation behavior, and adds missing tests when required. Use after reviewer reports no findings."
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Before starting work, read docs/agents/tester.md completely and follow it exactly. Also read and follow AGENTS.md and README.md.
+"""

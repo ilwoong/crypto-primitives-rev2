@@ -1,0 +1,8 @@
+name = "fixer"
+description = "Fixes only build warnings, test failures, and sanitizer failures reported by tester. Use after a failed tester stage, then rerun tester."
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Before starting work, read docs/agents/fixer.md completely and follow it exactly. Also read and follow AGENTS.md and README.md.
+"""

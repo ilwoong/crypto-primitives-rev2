@@ -71,7 +71,10 @@ lsh256_message_digest.final(&ctx, out);
 
 ```
 .
+├── .claude/agents/             # Claude Code용 역할 래퍼
+├── .codex/agents/              # Codex용 역할 래퍼
 ├── CMakeLists.txt
+├── docs/agents/                # 도구 중립적인 공용 역할 지시문
 ├── include/crypto-primitives/
 │   ├── cipher.h              # block_cipher 공통 인터페이스
 │   ├── message-digest.h      # message_digest 공통 인터페이스

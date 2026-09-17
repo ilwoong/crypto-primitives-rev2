@@ -1,0 +1,6 @@
+name = "reviewer"
+description = "Reviews formatted changes for correctness, memory safety, undefined behavior, cryptographic risks, and test reliability without editing files. Use after formatter."
+sandbox_mode = "read-only"
+developer_instructions = """
+Before starting work, read docs/agents/reviewer.md completely and follow it exactly. Also read and follow AGENTS.md and README.md.
+"""

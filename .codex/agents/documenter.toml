@@ -1,0 +1,8 @@
+name = "documenter"
+description = "Updates README.md and relevant header comments after implementation, review, and testing are complete. Use as the final repository pipeline stage."
+model = "gpt-5.6-luna"
+model_reasoning_effort = "low"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Before starting work, read docs/agents/documenter.md completely and follow it exactly. Also read and follow AGENTS.md and README.md.
+"""
