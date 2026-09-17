@@ -10,14 +10,17 @@ static const uint32_t DELTA[8] = {
     0xc3efe9db, 0x44626b02, 0x79e27c8a, 0x78df30ec, 0x715ea49e, 0xc785da0a, 0xe04ef22a, 0xe5c40957,
 };
 
-static inline uint32_t rol32(uint32_t value, size_t rot)
+// The key schedule passes rotation amounts up to 36 (spec: ROL by (i + k) mod 32).
+static inline uint32_t rol32(uint32_t value, unsigned rot)
 {
-    return (value << rot) | (value >> (32 - rot));
+    rot &= 31;
+    return (value << rot) | (value >> ((32 - rot) & 31));
 }
 
-static inline uint32_t ror32(uint32_t value, size_t rot)
+static inline uint32_t ror32(uint32_t value, unsigned rot)
 {
-    return (value >> rot) | (value << (32 - rot));
+    rot &= 31;
+    return (value >> rot) | (value << ((32 - rot) & 31));
 }
 
 void lea128_expand_key(void *ctx, const uint8_t *master_key)
@@ -29,7 +32,7 @@ void lea128_expand_key(void *ctx, const uint8_t *master_key)
     memcpy(t, master_key, 16);
 
     uint32_t *rk = (uint32_t *)c->round_keys;
-    for (size_t i = 0; i < LEA128_ROUNDS; i++) {
+    for (size_t i = 0; i < LEA128_ROUNDS; ++i) {
         uint32_t delta = DELTA[i & 3];
         t[0] = rol32(t[0] + rol32(delta, i), 1);
         t[1] = rol32(t[1] + rol32(delta, i + 1), 3);
@@ -55,7 +58,7 @@ void lea192_expand_key(void *ctx, const uint8_t *master_key)
     memcpy(t, master_key, 24);
 
     uint32_t *rk = (uint32_t *)c->round_keys;
-    for (size_t i = 0; i < LEA192_ROUNDS; i++) {
+    for (size_t i = 0; i < LEA192_ROUNDS; ++i) {
         uint32_t delta = DELTA[i % 6];
         t[0] = rol32(t[0] + rol32(delta, i), 1);
         t[1] = rol32(t[1] + rol32(delta, i + 1), 3);
@@ -83,7 +86,7 @@ void lea256_expand_key(void *ctx, const uint8_t *master_key)
     memcpy(t, master_key, 32);
 
     uint32_t *rk = (uint32_t *)c->round_keys;
-    for (size_t i = 0; i < LEA256_ROUNDS; i++) {
+    for (size_t i = 0; i < LEA256_ROUNDS; ++i) {
         uint32_t delta = DELTA[i & 7];
         t[(6 * i) & 7] = rol32(t[(6 * i) & 7] + rol32(delta, i), 1);
         t[(6 * i + 1) & 7] = rol32(t[(6 * i + 1) & 7] + rol32(delta, i + 1), 3);
@@ -110,7 +113,7 @@ void lea_encrypt(void *ctx, uint8_t *out, const uint8_t *in)
     uint32_t b[4];
     memcpy(b, in, 16);
 
-    for (size_t i = 0; i < c->rounds; i++) {
+    for (size_t i = 0; i < c->rounds; ++i) {
         uint32_t tmp = b[0];
         b[0] = rol32((b[0] ^ rk[0]) + (b[1] ^ rk[1]), 9);
         b[1] = ror32((b[1] ^ rk[2]) + (b[2] ^ rk[3]), 5);
@@ -131,7 +134,7 @@ void lea_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     memcpy(b, in, 16);
 
     rk += 6 * (c->rounds - 1);
-    for (size_t i = 0; i < c->rounds; i++) {
+    for (size_t i = 0; i < c->rounds; ++i) {
         uint32_t a = b[3];
         uint32_t new1 = (ror32(b[0], 9) - (b[3] ^ rk[0])) ^ rk[1];
         uint32_t new2 = (rol32(b[1], 5) - (new1 ^ rk[2])) ^ rk[3];
