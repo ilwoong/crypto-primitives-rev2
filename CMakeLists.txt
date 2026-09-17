@@ -37,6 +37,8 @@ add_cipher(aes)
 add_cipher(aes-lut1)
 add_cipher(aes-lut2)
 add_cipher(aes-lut3)
+add_cipher(lea)
+add_cipher(lea-unrolled)
 
 add_executable(aes-kat-test tests/aes-kat-test.c)
 target_include_directories(aes-kat-test PRIVATE ${PROJECT_SOURCE_DIR}/include)
