@@ -128,13 +128,14 @@ void lea_encrypt(void *ctx, uint8_t *out, const uint8_t *in)
 void lea_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
 {
     lea_ctx *c = (lea_ctx *)ctx;
-    const uint32_t *rk = c->round_keys;
+    // Walk down from one past the end so the pointer never goes below the array.
+    const uint32_t *rk = c->round_keys + 6 * c->rounds;
 
     uint32_t b[4];
     memcpy(b, in, 16);
 
-    rk += 6 * (c->rounds - 1);
     for (size_t i = 0; i < c->rounds; ++i) {
+        rk -= 6;
         uint32_t a = b[3];
         uint32_t new1 = (ror32(b[0], 9) - (b[3] ^ rk[0])) ^ rk[1];
         uint32_t new2 = (rol32(b[1], 5) - (new1 ^ rk[2])) ^ rk[3];
@@ -143,7 +144,6 @@ void lea_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
         b[1] = new1;
         b[2] = new2;
         b[3] = new3;
-        rk -= 6;
     }
 
     memcpy(out, b, 16);

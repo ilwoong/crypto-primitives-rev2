@@ -147,7 +147,7 @@ void lea_unrolled_encrypt(void *ctx, uint8_t *out, const uint8_t *in)
 void lea_unrolled_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
 {
     lea_unrolled_ctx *c = (lea_unrolled_ctx *)ctx;
-    const uint32_t *rk = c->round_keys;
+    const uint32_t *rk = c->round_keys + 6 * c->rounds;
 
     uint32_t b0, b1, b2, b3;
     memcpy(&b0, in, 4);
@@ -155,27 +155,26 @@ void lea_unrolled_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
     memcpy(&b2, in + 8, 4);
     memcpy(&b3, in + 12, 4);
 
-    rk += 6 * (c->rounds - 1);
     for (size_t i = 0; i < c->rounds; i += 4) {
+        rk -= 6;
         b0 = (ror32(b0, 9) - (b3 ^ rk[0])) ^ rk[1];
         b1 = (rol32(b1, 5) - (b0 ^ rk[2])) ^ rk[3];
         b2 = (rol32(b2, 3) - (b1 ^ rk[4])) ^ rk[5];
-        rk -= 6;
 
+        rk -= 6;
         b3 = (ror32(b3, 9) - (b2 ^ rk[0])) ^ rk[1];
         b0 = (rol32(b0, 5) - (b3 ^ rk[2])) ^ rk[3];
         b1 = (rol32(b1, 3) - (b0 ^ rk[4])) ^ rk[5];
-        rk -= 6;
 
+        rk -= 6;
         b2 = (ror32(b2, 9) - (b1 ^ rk[0])) ^ rk[1];
         b3 = (rol32(b3, 5) - (b2 ^ rk[2])) ^ rk[3];
         b0 = (rol32(b0, 3) - (b3 ^ rk[4])) ^ rk[5];
-        rk -= 6;
 
+        rk -= 6;
         b1 = (ror32(b1, 9) - (b0 ^ rk[0])) ^ rk[1];
         b2 = (rol32(b2, 5) - (b1 ^ rk[2])) ^ rk[3];
         b3 = (rol32(b3, 3) - (b2 ^ rk[4])) ^ rk[5];
-        rk -= 6;
     }
 
     memcpy(out, &b0, 4);
