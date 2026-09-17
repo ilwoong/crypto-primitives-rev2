@@ -44,6 +44,7 @@ add_cipher(hight)
 add_cipher(hight-lut)
 add_cipher(aria)
 add_cipher(aria-lut)
+add_cipher(seed)
 
 add_executable(aes-kat-test tests/aes-kat-test.c)
 target_include_directories(aes-kat-test PRIVATE ${PROJECT_SOURCE_DIR}/include)
@@ -66,3 +67,7 @@ add_test(NAME hight-kat-test COMMAND hight-kat-test ${PROJECT_SOURCE_DIR}/tests/
 add_executable(aria-kat-test tests/aria-kat-test.c)
 target_link_libraries(aria-kat-test PRIVATE aria aria-lut)
 add_test(NAME aria-kat-test COMMAND aria-kat-test ${PROJECT_SOURCE_DIR}/tests/vectors/aria)
+
+add_executable(seed-kat-test tests/seed-kat-test.c)
+target_link_libraries(seed-kat-test PRIVATE seed)
+add_test(NAME seed-kat-test COMMAND seed-kat-test ${PROJECT_SOURCE_DIR}/tests/vectors/seed)
