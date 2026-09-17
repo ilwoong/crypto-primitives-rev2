@@ -31,7 +31,7 @@ void lea128_expand_key(void *ctx, const uint8_t *master_key)
     uint32_t t[4];
     memcpy(t, master_key, 16);
 
-    uint32_t *rk = (uint32_t *)c->round_keys;
+    uint32_t *rk = c->round_keys;
     for (size_t i = 0; i < LEA128_ROUNDS; ++i) {
         uint32_t delta = DELTA[i & 3];
         t[0] = rol32(t[0] + rol32(delta, i), 1);
@@ -57,7 +57,7 @@ void lea192_expand_key(void *ctx, const uint8_t *master_key)
     uint32_t t[6];
     memcpy(t, master_key, 24);
 
-    uint32_t *rk = (uint32_t *)c->round_keys;
+    uint32_t *rk = c->round_keys;
     for (size_t i = 0; i < LEA192_ROUNDS; ++i) {
         uint32_t delta = DELTA[i % 6];
         t[0] = rol32(t[0] + rol32(delta, i), 1);
@@ -85,7 +85,7 @@ void lea256_expand_key(void *ctx, const uint8_t *master_key)
     uint32_t t[8];
     memcpy(t, master_key, 32);
 
-    uint32_t *rk = (uint32_t *)c->round_keys;
+    uint32_t *rk = c->round_keys;
     for (size_t i = 0; i < LEA256_ROUNDS; ++i) {
         uint32_t delta = DELTA[i & 7];
         t[(6 * i) & 7] = rol32(t[(6 * i) & 7] + rol32(delta, i), 1);
@@ -108,7 +108,7 @@ void lea256_expand_key(void *ctx, const uint8_t *master_key)
 void lea_encrypt(void *ctx, uint8_t *out, const uint8_t *in)
 {
     lea_ctx *c = (lea_ctx *)ctx;
-    const uint32_t *rk = (const uint32_t *)c->round_keys;
+    const uint32_t *rk = c->round_keys;
 
     uint32_t b[4];
     memcpy(b, in, 16);
@@ -128,7 +128,7 @@ void lea_encrypt(void *ctx, uint8_t *out, const uint8_t *in)
 void lea_decrypt(void *ctx, uint8_t *out, const uint8_t *in)
 {
     lea_ctx *c = (lea_ctx *)ctx;
-    const uint32_t *rk = (const uint32_t *)c->round_keys;
+    const uint32_t *rk = c->round_keys;
 
     uint32_t b[4];
     memcpy(b, in, 16);

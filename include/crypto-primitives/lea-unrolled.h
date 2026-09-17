@@ -8,7 +8,7 @@
 
 typedef struct {
     size_t rounds;
-    uint8_t round_keys[768];
+    uint32_t round_keys[192];
 } lea_unrolled_ctx;
 
 extern const block_cipher lea128_unrolled_block_cipher;

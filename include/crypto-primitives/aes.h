@@ -8,7 +8,7 @@
 
 typedef struct {
     size_t rounds;
-    uint8_t round_keys[240];
+    uint32_t round_keys[60];
 } aes_ctx;
 
 extern const block_cipher aes128_block_cipher;
