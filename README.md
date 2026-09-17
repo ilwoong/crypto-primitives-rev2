@@ -78,6 +78,8 @@ lsh256_message_digest.final(&ctx, out);
 │   ├── template-cipher.c
 │   └── <name>.c              # 알고리즘별 구현 (파일 하나)
 └── tests/
+    ├── kat-common.h          # KAT 하네스 헤더
+    ├── kat-common.c          # KAT 하네스 구현
     ├── <name>-test.c         # 스펙 테스트 벡터 기반 단위 테스트
     ├── <algo>-kat-test.c     # Known Answer Test
     └── vectors/<algo>/       # KAT 벡터 (.rsp)
@@ -153,7 +155,13 @@ SEED는 원 저장소 구현의 키 스케줄이 RFC 4269와 달라(키가 전�
 
 해시 함수는 `message-digest.h`의 `message_digest`를 구현하고 `add_message_digest(<name>)`으로 등록합니다. 파일 규칙은 같습니다.
 
-KAT 테스트를 추가하려면 `tests/vectors/<algo>/`에 `.rsp` 파일을 넣고 `tests/<algo>-kat-test.c`를 작성한 뒤, 기존 KAT 테스트와 같은 방식으로 `CMakeLists.txt`에 실행 파일과 테스트를 등록합니다.
+KAT 테스트를 추가하려면 `tests/vectors/<algo>/`에 `.rsp` 파일을 넣고 `tests/<algo>-kat-test.c`를 작성합니다. 테스트 파일은 `kat-common.h`를 include하고, 컨텍스트 변수들과 `kat_block_cipher_entry`(또는 `kat_message_digest_entry`) 배열 `ENTRIES[]`, 벡터 파일명 배열 `FILES[]`를 정의한 뒤, `main`에서 `kat_block_cipher_main()` 또는 `kat_message_digest_main()`을 호출합니다. 그 후 `CMakeLists.txt`에 한 줄을 추가합니다.
+
+```cmake
+add_kat_test(<algo> <vectors-subdir> <lib>...)
+```
+
+`<lib>...`에는 테스트할 모든 라이브러리를 나열합니다. 예를 들어 AES는 `add_kat_test(aes aes aes aes-lut1 aes-lut2 aes-lut3)`, LSH는 `add_kat_test(lsh lsh lsh256 lsh512)`입니다. 테스트는 `tests/vectors/<vectors-subdir>/`에서 `FILES[]`에 나열한 파일만 읽고, 각 벡터를 키/블록 길이(해시는 다이제스트 길이)가 일치하는 모든 `ENTRIES` 항목에 대해 검증합니다. 일치하는 항목이 없거나, 파일에 벡터가 하나도 없거나, hex 값이 잘못되면 실패로 셉니다.
 
 ## 코드 스타일
 

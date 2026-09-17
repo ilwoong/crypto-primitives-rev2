@@ -15,7 +15,8 @@ model: opus
 - `include/crypto-primitives/<name>.h`: 컨텍스트 구조체, 함수 선언, `extern const block_cipher`(또는 `message_digest`) 인스턴스 선언. `cipher.h` / `message-digest.h`를 include.
 - `src/<name>.c`: 구현 하나. 테이블은 `static const`로 이 파일 안에 인라인. 원본에서 스크립트로 추출하고 손으로 옮기지 않습니다.
 - `tests/<name>-test.c`: `tests/template-cipher-test.c`의 구조를 그대로 따릅니다 (test_vector 배열, `[PASS]`/`[FAIL]` 출력, encrypt/decrypt/in-place 확인, 실패 수를 종료 코드로 반환). 해시는 한 번에 넣기와 바이트 단위 update를 모두 확인합니다.
-- `CMakeLists.txt`: `add_cipher(<name>)` 또는 `add_message_digest(<name>)` 한 줄. KAT 테스트는 기존 `<algo>-kat-test` 블록과 같은 방식으로 등록합니다.
+- `CMakeLists.txt`: `add_cipher(<name>)` 또는 `add_message_digest(<name>)` 한 줄. KAT 테스트는 `add_kat_test(<algo> <vectors-subdir> <lib>...)` 한 줄로 등록합니다.
+- `tests/<algo>-kat-test.c`: 파서를 직접 쓰지 않고 `tests/kat-common.h`의 공용 하네스를 씁니다. 컨텍스트 저장소(`static <algo>_ctx ctx_<algo>;`), `ENTRIES[]`(`kat_block_cipher_entry`: 이름, 인스턴스, 키 바이트, 블록 바이트, ctx / 해시는 `kat_message_digest_entry`), `FILES[]`를 선언하고 `main`에서 `kat_block_cipher_main` 또는 `kat_message_digest_main`을 호출합니다. 기존 `tests/aes-kat-test.c`, `tests/lsh-kat-test.c`를 본보기로 삼습니다.
 - 변형 이름은 `<algo>-<variant>` (예: `aes-lut1`, `hight-lut`). 파일명은 하이픈, 식별자는 밑줄.
 
 ## 코드 규칙

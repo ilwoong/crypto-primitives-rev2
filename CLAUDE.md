@@ -9,7 +9,7 @@ cmake -S . -B build && cmake --build build          # 빌드 (-Wall -Wextra -Wpe
 ctest --test-dir build --output-on-failure           # 전체 테스트 (CTest)
 cmake -S . -B build/sanitize -DCMAKE_C_FLAGS="-fsanitize=undefined,address -fno-sanitize-recover=all" \
   && cmake --build build/sanitize && ctest --test-dir build/sanitize --output-on-failure   # UBSan+ASan
-clang-format --dry-run --Werror src/*.c include/crypto-primitives/*.h tests/*.c            # 포맷 검사
+clang-format --dry-run --Werror src/*.c include/crypto-primitives/*.h tests/*.c tests/*.h  # 포맷 검사
 ```
 
 `build/`는 gitignore 대상이므로 sanitizer 빌드도 `build/sanitize`처럼 그 안에 둔다.
